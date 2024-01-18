@@ -1,0 +1,14 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@font-face {
+    font-family: 'Reborn';
+    src: url('./assets/Reborn.woff');
+    /* Add other font properties here if needed */
+  }
+
+  @font-face{
+    font-family: 'CG_Reg';
+    src: url('./assets/CormorantGaramond-Medium.ttf');
+  }

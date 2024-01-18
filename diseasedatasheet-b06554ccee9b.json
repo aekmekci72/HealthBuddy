@@ -1,0 +1,13 @@
+{
+  "type": "service_account",
+  "project_id": "diseasedatasheet",
+  "private_key_id": "b06554ccee9b272280674fcb25ab25da05d45cc2",
+  "private_key": "-----BEGIN PRIVATE KEY-----\nMIIEvAIBADANBgkqhkiG9w0BAQEFAASCBKYwggSiAgEAAoIBAQC3f0I2UsSj3KmQ\nUdztntUCXdy2aKgTNfqBWndB+Z3ZwcQqfqhcAFTQnWOrNJcWvHliB+utVqp2lm+j\npyGz9DPH0pHTyIjMiZ0c57XJgJYWiphqQx3ke6sKI5XeXxyZ0MbqSm17EXQD97OT\nPj6/7PU3uANkihMKTwDWutPvTGEHR4RdVgK6XJoMnHepA92kLThV87e9lsAoSnXr\nQKKqzZPC3WElO3pnNud92L0jibi6p3fknMitR+IjBbWhk8wJ9Wu/JeB68JJ1OPXw\nyxYom+XYeuCNx4rrQ/J3d09shfmvAPpKX4E8Sop7owlqhiUa+QcqUTTwOiq3MKK4\npGNd9pOJAgMBAAECggEACRjj7lfI5DNTzEIEvRqdZqBC6Z+zan1n+ZsDs9eFZAb7\nW9x66hHBorSU3Qdu0KugLHQmUuoLqjSv3PoTnY13NjpKLMjhwFs3uPfDX1WyyzQM\nlaMVc68OZiKowtUuELGlNPci6aGuQeaZRmzk9USxDRXARE8kncOYL+0kBfaATnkf\ncB8oPr0lMSO1xap3Nrtj1RrvdX+1NwsJu5ERt3Tkb1f/uFkIlxa2RNbO5qamWvQB\ngYcu5RT60V57aLUKobWVpoz8wAQ4b70+rxLRZ2gv/3JqOra4Y+Y4A7c9UQHTXPXf\nRSPWhF9asLjiXbHS72MANOm52N7yim+FVzxoOkr9EQKBgQD02U6mb93VOhrGOC8s\nn4fwT6tKjS+PTaHLbfvY/njkAL+D56hkyeOLdmzVDknWaRzFakubPBICRDLn9ccf\nNlTJTl88RGVH1TPKh+sUnBo7PpBy6qAw65eF3Ht+LEUAFSlp1svjQYr8lFMPbfO/\nlwPrL9ukok9kJ7/lis7pqVnRsQKBgQC/2qa+j4tAsqTDB9fw82v3UF/DXIhEFrn6\nZ3WYiRLG7HtI8wTQP+fU47ao5/h4SbuXAb4zM9y9qGAVEeLjEuYb9Eu+esJepp/S\nUmPakbqhKlNnE+WfTiFgMPN7lhrAjcdGn7Xg6kL7TtPLuvvJygvudEE+/CidBvr3\nArxVkv29WQKBgDObHaWczF+luIDw1JiOI0O2Nv8mlNCaZzCORNeuguJjefoeOHLN\nzoTVeAjL0yo6y1KcncThO1Z481XKiqZ8eBBZ0V7Nd59VQ247iYO1hx3XiPB/nTXS\nYgRXvTuRrxVeYHUrTZvfc6DazkrhPM+zz6KhWqTvhNYyPpLt18CN7h1xAoGAf1M3\nMmTFgAyPODguYeTLFHks9NSmQrnqd3rOGotuAMLVFxbhbOvcifcONI6u4fXdH1yy\nw/x5VQ03pwQV1amnOYop8qI5+OMQUl8HkfkBKRCUBWa5D76ke9hA3xZBbuUpCX/Z\nDwmppmssOJtBmywSOxDAdHKY6Y3GZMRWBVzmNRECgYAvRpFtpaEcFzmELcY2GmPK\nNenIa1ns5iBot9AW6roSqlPufDSKk+w9xxKImwvWxFWXw9m8rLd4WFDHyYBZ1Hv/\n4JLtldrsBIa1vc3Cspsx4ZIw/UFkePC8ryOGP1ujONomlnboX03cJe/oQQc9qU+Y\nKbG0Ud+FQYlKeYPeau9/mA==\n-----END PRIVATE KEY-----\n",
+  "client_email": "annekm26@diseasedatasheet.iam.gserviceaccount.com",
+  "client_id": "103197661982448430526",
+  "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+  "token_uri": "https://oauth2.googleapis.com/token",
+  "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+  "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/annekm26%40diseasedatasheet.iam.gserviceaccount.com",
+  "universe_domain": "googleapis.com"
+}

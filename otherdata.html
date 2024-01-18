@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Orphanet XML Visualization</title>
+    <style>
+        table {
+            border-collapse: collapse;
+            width: 100%;
+        }
+
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+
+        th {
+            background-color: #f2f2f2;
+        }
+    </style>
+</head>
+<body>
+
+<script>
+    // Step 1: Load XML data from a file
+    var xmlPath = 'en_product9_prev.xml'; // Replace with the path to your XML file
+
+    fetch(xmlPath)
+        .then(response => response.text())
+        .then(xmlString => {
+            // Step 2: Parse XML data
+            var parser = new DOMParser();
+            var xmlDoc = parser.parseFromString(xmlString, "text/xml");
+
+            // Step 3: Extract data
+            var disorders = xmlDoc.getElementsByTagName("Disorder");
+
+            // Step 4: Create HTML elements
+            var table = document.createElement("table");
+            var thead = document.createElement("thead");
+            var tbody = document.createElement("tbody");
+
+            // Create table header
+            var headerRow = document.createElement("tr");
+            var headers = ["OrphaCode", "Name", "ExpertLink", "DisorderType", "DisorderGroup", "Prevalence"];
+            headers.forEach(function (headerText) {
+                var th = document.createElement("th");
+                th.textContent = headerText;
+                headerRow.appendChild(th);
+            });
+            thead.appendChild(headerRow);
+            table.appendChild(thead);
+
+            // Create table rows with data
+            for (var i = 0; i < disorders.length; i++) {
+                var orphaCode = getElementText(disorders[i], "OrphaCode");
+                var name = getElementText(disorders[i], "Name");
+                var expertLink = getElementText(disorders[i], "ExpertLink", "en");
+                var disorderType = getElementText(disorders[i], "DisorderType", "Name");
+                var disorderGroup = getElementText(disorders[i], "DisorderGroup", "Name");
+                var prevalence = getPrevalenceDetails(disorders[i]);
+
+                // Create table row
+                var row = document.createElement("tr");
+                var cellOrphaCode = document.createElement("td");
+                var cellName = document.createElement("td");
+                var cellExpertLink = document.createElement("td");
+                var cellDisorderType = document.createElement("td");
+                var cellDisorderGroup = document.createElement("td");
+                var cellPrevalence = document.createElement("td");
+
+                cellOrphaCode.textContent = orphaCode;
+                cellName.textContent = name;
+                cellExpertLink.innerHTML = '<a href="' + expertLink + '" target="_blank">Link</a>';
+                cellDisorderType.textContent = disorderType;
+                cellDisorderGroup.textContent = disorderGroup;
+                cellPrevalence.textContent = prevalence;
+
+                row.appendChild(cellOrphaCode);
+                row.appendChild(cellName);
+                row.appendChild(cellExpertLink);
+                row.appendChild(cellDisorderType);
+                row.appendChild(cellDisorderGroup);
+                row.appendChild(cellPrevalence);
+                tbody.appendChild(row);
+            }
+
+            // Step 5: Append to HTML document
+            table.appendChild(tbody);
+            document.body.appendChild(table);
+        })
+        .catch(error => console.error('Error loading XML file:', error));
+
+    // Helper function to get element text content or a default value if the element is undefined
+    function getElementText(parent, tagName, langAttribute) {
+        var element = parent.getElementsByTagName(tagName)[0];
+        if (element) {
+            if (langAttribute) {
+                return element.getAttribute(langAttribute) || 'N/A';
+            } else {
+                return element.textContent || 'N/A';
+            }
+        } else {
+            return 'N/A';
+        }
+    }
+
+    // Helper function to get prevalence details
+    function getPrevalenceDetails(disorder) {
+        var prevalenceList = disorder.getElementsByTagName("Prevalence");
+        if (prevalenceList.length > 0) {
+            var prevalenceDetails = "";
+            for (var i = 0; i < prevalenceList.length; i++) {
+                var source = getElementText(prevalenceList[i], "Source");
+                var prevalenceType = getElementText(prevalenceList[i], "PrevalenceType", "Name");
+                var prevalenceClass = getElementText(prevalenceList[i], "PrevalenceClass", "Name");
+                var valMoy = getElementText(prevalenceList[i], "ValMoy");
+                var geographic = getElementText(prevalenceList[i], "PrevalenceGeographic", "Name");
+                var validationStatus = getElementText(prevalenceList[i], "PrevalenceValidationStatus", "Name");
+
+                prevalenceDetails += "Source: " + source + "<br>";
+                prevalenceDetails += "Type: " + prevalenceType + "<br>";
+                prevalenceDetails += "Class: " + prevalenceClass + "<br>";
+                prevalenceDetails += "ValMoy: " + valMoy + "<br>";
+                prevalenceDetails += "Geographic: " + geographic + "<br>";
+                prevalenceDetails += "Validation Status: " + validationStatus + "<br><br>";
+            }
+            return prevalenceDetails;
+        } else {
+            return 'N/A';
+        }
+    }
+</script>
+
+</body>
+</html>

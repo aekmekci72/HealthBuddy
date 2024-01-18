@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Orphanet Data Visualization</title>
+    <style>
+        table {
+            border-collapse: collapse;
+            width: 100%;
+        }
+
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+
+        th {
+            background-color: #f2f2f2;
+        }
+    </style>
+</head>
+<body>
+
+<script>
+    // Step 1: Specify the path to the XML file
+    var xmlPath = 'en_product1.xml';
+
+    // Step 2: Fetch XML data from the specified path
+    fetch(xmlPath)
+        .then(response => response.text())
+        .then(xmlString => {
+            // Step 3: Parse XML data
+            var parser = new DOMParser();
+            var xmlDoc = parser.parseFromString(xmlString, "text/xml");
+
+            // Log XML document to console for debugging
+            console.log(xmlDoc);
+
+            // Step 4: Extract data
+            var disorders = xmlDoc.getElementsByTagName("Disorder");
+
+            // Log disorders to console for debugging
+            console.log(disorders);
+
+            // Step 5: Create HTML elements
+            var table = document.createElement("table");
+            var thead = document.createElement("thead");
+            var tbody = document.createElement("tbody");
+
+            // Create table header
+            var headerRow = document.createElement("tr");
+            var headers = ["OrphaCode", "Name", "ExpertLink", "Synonyms", "DisorderType", "DisorderGroup", "ExternalReferences", "SummaryInformation"];
+            headers.forEach(function (headerText) {
+                var th = document.createElement("th");
+                th.textContent = headerText;
+                headerRow.appendChild(th);
+            });
+            thead.appendChild(headerRow);
+            table.appendChild(thead);
+
+            // Create table rows with data
+            for (var i = 0; i < disorders.length; i++) {
+                try {
+                    var orphaCode = disorders[i].getElementsByTagName("OrphaCode")[0].textContent;
+                    var name = disorders[i].getElementsByTagName("Name")[0].textContent;
+                    var expertLink = disorders[i].getElementsByTagName("ExpertLink")[0].textContent;
+
+                    // Extract synonyms
+                    var synonymsData = [];
+                    var synonymList = disorders[i].getElementsByTagName("SynonymList")[0].getElementsByTagName("Synonym");
+                    for (var j = 0; j < synonymList.length; j++) {
+                        var synonym = synonymList[j].textContent;
+                        synonymsData.push(synonym);
+                    }
+
+                    var disorderType = disorders[i].getElementsByTagName("DisorderType")[0].getElementsByTagName("Name")[0].textContent;
+                    var disorderGroup = disorders[i].getElementsByTagName("DisorderGroup")[0].getElementsByTagName("Name")[0].textContent;
+
+                    // Extract external references
+                    var externalReferencesData = [];
+                    var externalReferenceList = disorders[i].getElementsByTagName("ExternalReferenceList")[0].getElementsByTagName("ExternalReference");
+                    for (var k = 0; k < externalReferenceList.length; k++) {
+                        var source = externalReferenceList[k].getElementsByTagName("Source")[0].textContent;
+                        var reference = externalReferenceList[k].getElementsByTagName("Reference")[0].textContent;
+                        externalReferencesData.push(`${source}: ${reference}`);
+                    }
+
+                    // Extract summary information
+                    var summaryInformation = disorders[i].getElementsByTagName("SummaryInformationList")[0].getElementsByTagName("SummaryInformation")[0].getElementsByTagName("TextSectionList")[0].getElementsByTagName("TextSection")[0].getElementsByTagName("Contents")[0].textContent;
+
+                    // Create table row
+                    var row = document.createElement("tr");
+                    var cellOrphaCode = document.createElement("td");
+                    var cellName = document.createElement("td");
+                    var cellExpertLink = document.createElement("td");
+                    var cellSynonyms = document.createElement("td");
+                    var cellDisorderType = document.createElement("td");
+                    var cellDisorderGroup = document.createElement("td");
+                    var cellExternalReferences = document.createElement("td");
+                    var cellSummaryInformation = document.createElement("td");
+
+                    cellOrphaCode.textContent = orphaCode;
+                    cellName.textContent = name;
+                    cellExpertLink.innerHTML = `<a href="${expertLink}" target="_blank">${expertLink}</a>`;
+                    cellSynonyms.innerHTML = synonymsData.join("<br>");
+                    cellDisorderType.textContent = disorderType;
+                    cellDisorderGroup.textContent = disorderGroup;
+                    cellExternalReferences.innerHTML = externalReferencesData.join("<br>");
+                    cellSummaryInformation.textContent = summaryInformation;
+
+                    row.appendChild(cellOrphaCode);
+                    row.appendChild(cellName);
+                    row.appendChild(cellExpertLink);
+                    row.appendChild(cellSynonyms);
+                    row.appendChild(cellDisorderType);
+                    row.appendChild(cellDisorderGroup);
+                    row.appendChild(cellExternalReferences);
+                    row.appendChild(cellSummaryInformation);
+                    tbody.appendChild(row);
+                } catch (error) {
+                    console.error('Error processing disorder data:', error);
+                }
+            }
+
+            // Step 6: Append to HTML document
+            table.appendChild(tbody);
+            document.body.appendChild(table);
+        })
+        .catch(error => console.error('Error loading XML file:', error));
+</script>
+
+</body>
+</html>

@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HPO Terms Dropdown</title>
+</head>
+<body>
+
+<!-- Dropdown Select Element -->
+<label for="hpoTermsSelect">Select HPO Term:</label>
+<select id="hpoTermsSelect" style="width: 200px;" oninput="filterDropdown()" onkeydown="preventSpace(event)">
+    <!-- Options will be added dynamically using JavaScript -->
+</select>
+
+<script>
+    // Step 1: Load XML data from a file
+    var xmlPath = 'en_product4.xml';
+
+    fetch(xmlPath)
+        .then(response => response.text())
+        .then(xmlString => {
+            // Step 2: Parse XML data
+            var parser = new DOMParser();
+            var xmlDoc = parser.parseFromString(xmlString, "text/xml");
+
+            // Step 3: Extract unique HPO terms
+            var hpoTermsSet = new Set();
+            var hpoAssociations = xmlDoc.getElementsByTagName("HPODisorderAssociation");
+            for (var i = 0; i < hpoAssociations.length; i++) {
+                var hpoTerm = hpoAssociations[i].getElementsByTagName("HPOTerm")[0].textContent;
+                hpoTermsSet.add(hpoTerm);
+            }
+
+            // Step 4: Create and populate dropdown select alphabetically
+            var hpoTermsSelect = document.getElementById("hpoTermsSelect");
+
+            // Convert the set to an array and sort it alphabetically
+            var sortedHpoTerms = Array.from(hpoTermsSet).sort();
+
+            sortedHpoTerms.forEach(function (hpoTerm) {
+                var option = document.createElement("option");
+                option.value = hpoTerm;
+                option.text = hpoTerm;
+                hpoTermsSelect.appendChild(option);
+            });
+        })
+        .catch(error => console.error('Error loading XML file:', error));
+
+    // Step 5: Add filtering functionality
+    function filterDropdown() {
+        var input, filter, select, options, i, txtValue;
+        input = document.getElementById("hpoTermsSelect");
+        filter = input.value.toUpperCase();
+        select = document.getElementById("hpoTermsSelect");
+        options = select.getElementsByTagName("option");
+
+        for (i = 0; i < options.length; i++) {
+            txtValue = options[i].text;
+            if (txtValue.toUpperCase().indexOf(filter) > -1) {
+                options[i].style.display = "";
+            } else {
+                options[i].style.display = "none";
+            }
+        }
+    }
+
+    // Step 6: Prevent space key from triggering reset
+    function preventSpace(event) {
+        if (event.key === " ") {
+            event.preventDefault();
+        }
+    }
+</script>
+
+</body>
+</html>

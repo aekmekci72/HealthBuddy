@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>XML Visualization</title>
+    <style>
+        table {
+            border-collapse: collapse;
+            width: 100%;
+        }
+
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+
+        th {
+            background-color: #f2f2f2;
+        }
+    </style>
+</head>
+<body>
+
+<script>
+    // Step 1: Load XML data from a file
+    var xmlPath = 'en_product7.xml'; // Replace with the path to your XML file
+
+    fetch(xmlPath)
+        .then(response => response.text())
+        .then(xmlString => {
+            // Step 2: Parse XML data
+            var parser = new DOMParser();
+            var xmlDoc = parser.parseFromString(xmlString, "text/xml");
+
+            // Step 3: Extract data
+            var disorders = xmlDoc.getElementsByTagName("Disorder");
+
+            // Step 4: Create HTML elements
+            var table = document.createElement("table");
+            var thead = document.createElement("thead");
+            var tbody = document.createElement("tbody");
+
+            // Create table header
+            var headerRow = document.createElement("tr");
+            var headers = ["OrphaCode", "Name", "ExpertLink", "TargetDisorder", "PreferentialParent"];
+            headers.forEach(function (headerText) {
+                var th = document.createElement("th");
+                th.textContent = headerText;
+                headerRow.appendChild(th);
+            });
+            thead.appendChild(headerRow);
+            table.appendChild(thead);
+
+            // Create table rows with data
+            for (var i = 0; i < disorders.length; i++) {
+                var orphaCode = getElementText(disorders[i], "OrphaCode");
+                var name = getElementText(disorders[i], "Name");
+                var expertLink = getElementText(disorders[i], "ExpertLink");
+                var targetDisorder = getElementText(disorders[i], "TargetDisorder", "Name");
+                var preferentialParent = getElementText(disorders[i], "DisorderDisorderAssociationType", "Name");
+
+                // Create table row
+                var row = document.createElement("tr");
+                var cellOrphaCode = document.createElement("td");
+                var cellName = document.createElement("td");
+                var cellExpertLink = document.createElement("td");
+                var cellTargetDisorder = document.createElement("td");
+                var cellPreferentialParent = document.createElement("td");
+
+                cellOrphaCode.textContent = orphaCode;
+                cellName.textContent = name;
+                cellExpertLink.innerHTML = '<a href="' + expertLink + '" target="_blank">Link</a>';
+                cellTargetDisorder.textContent = targetDisorder;
+                cellPreferentialParent.textContent = preferentialParent;
+
+                row.appendChild(cellOrphaCode);
+                row.appendChild(cellName);
+                row.appendChild(cellExpertLink);
+                row.appendChild(cellTargetDisorder);
+                row.appendChild(cellPreferentialParent);
+                tbody.appendChild(row);
+            }
+
+            // Step 5: Append to HTML document
+            table.appendChild(tbody);
+            document.body.appendChild(table);
+        })
+        .catch(error => console.error('Error loading XML file:', error));
+
+    // Helper function to get element text content or a default value if the element is undefined
+    function getElementText(parent, tagName, subTagName) {
+        var element = parent.getElementsByTagName(tagName)[0];
+        if (element) {
+            if (subTagName) {
+                var subElement = element.getElementsByTagName(subTagName)[0];
+                return subElement ? subElement.textContent : 'N/A';
+            } else {
+                return element.textContent;
+            }
+        } else {
+            return 'N/A';
+        }
+    }
+</script>
+
+</body>
+</html>
