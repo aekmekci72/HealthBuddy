@@ -1,7 +1,7 @@
 const express = require('express');
 const multer = require('multer');
 const path = require('path');
-const db = require('./db/db_connection.js');
+const db = require('./db/db_connection.js').promise();
 const cors = require('cors');
 const logger = require('morgan');
 const bodyParser = require('body-parser');
@@ -455,166 +455,127 @@ app.post('/getusermedicalhistory', (req, res) => {
     }
   });
 });
-app.post('/calculatepercentagematch', (req, res) => {
+app.post('/calculatepercentagematch', async (req, res) => {
   const { username } = req.body;
 
-  const getAllThingsSql = `
-    SELECT disease, thing, col, weight
-    FROM disease_xref;
+  const getAllDiseasesInfoSql = `
+    SELECT name, symptomsOccurrence, geneticEffects
+    FROM diseases;
   `;
 
-  db.query(getAllThingsSql, (error, things) => {
-    if (error) {
-      console.error(error);
-      res.status(500).json({ message: 'An error occurred while processing your request' });
-    } else {
-      getTotalWeights(username, things)
-        .then((diseaseWeights) => {
-          const diseaseMatchResults = {};
+  try {
+    const diseasesInfo = await db.query(getAllDiseasesInfoSql);
+    const getUserAgeSql = `
+      SELECT age
+      FROM user_information
+      WHERE username = ?;
+    `;
 
-          const promises = things.map(({ disease, thing, col, weight }) => {
-            const columnParts = col.split('-');
-            const tableName = columnParts[0];
-            const columnName = columnParts[1];
-          
-            return new Promise((resolve) => {
-              if (thing.includes('-')) {
-                const familyHistoryParts = thing.split('-');
-                const familyMember = familyHistoryParts[0];
-                const diseasePart = familyHistoryParts[1];
-          
-                checkFamilyHistory(db, username, familyMember, diseasePart, (isFound) => {
-                  console.log(`Disease: ${disease}`);
-                  console.log(`Thing: ${thing}`);
-                  console.log(`Is Found: ${isFound}`);
-          
-                  let percentMatch = calculatePercentMatch(isFound, weight);
-          
-                  console.log(`Percent Match: ${percentMatch}`);
-          
-                  if (!diseaseMatchResults[disease]) {
-                    diseaseMatchResults[disease] = 0;
-                  }
-          
-                  diseaseMatchResults[disease] += percentMatch;
-          
-                  resolve();
-                });
-              } else {
-                checkThing(db, username, tableName, columnName, thing, (isFound) => {
-                  console.log(`Disease: ${disease}`);
-                  console.log(`Thing: ${thing}`);
-                  console.log(`Is Found: ${isFound}`);
-          
-                  let percentMatch = calculatePercentMatch(isFound, weight);
-          
-                  console.log(`Percent Match: ${percentMatch}`);
-          
-                  if (!diseaseMatchResults[disease]) {
-                    diseaseMatchResults[disease] = 0;
-                  }
-          
-                  diseaseMatchResults[disease] += percentMatch;
-          
-                  resolve();
-                });
-              }
-            });
-          });
+    const ageResult = await db.query(getUserAgeSql, [username]);
+    const userAge = ageResult[0].age;
+    const ageGroup = categorizeAge(userAge);
 
-          Promise.all(promises)
-            .then(() => {
-              const normalizedResults = Object.entries(diseaseMatchResults).reduce(
-                (acc, [disease, percentMatch]) => {
-                  const normalizedPercent = percentMatch / diseaseWeights[disease] *100;
-                  acc[disease] = normalizedPercent;
-                  return acc;
-                },
-                {}
-              );
+    const getUserSexSql = `
+      SELECT sex
+      FROM user_information
+      WHERE username = ?;
+    `;
 
-              console.log(normalizedResults);
-              res.json({ diseaseMatchResults: normalizedResults });
-            })
-            .catch((err) => {
-              console.error(err);
-              res.status(500).json({ message: 'An error occurred while processing your request' });
-            });
-        })
-        .catch((err) => {
-          console.error(err);
-          res.status(500).json({ message: 'An error occurred while processing your request' });
-        });
-    }
-  });
+    const sexResult = await db.query(getUserSexSql, [username]);
+    const userSex = sexResult[0].sex;
+
+    const getUserFamilyHistorySql = `
+      SELECT disease, generation
+      FROM familyhistory
+      WHERE username = ?;
+    `;
+
+    const familyHistoryResults = await db.query(getUserFamilyHistorySql, [username]);
+    const familyHistoryProbability = calculateFamilyHistoryProbability(familyHistoryResults);
+
+    const getUserSymptomsSql = `
+      SELECT symptom
+      FROM symptoms
+      WHERE username = ?;
+    `;
+
+    const userSymptomsResults = await db.query(getUserSymptomsSql, [username]);
+    const symptomsProbability = calculateSymptomsProbability(userSymptomsResults, diseasesInfo);
+
+    const percentMatchResults = calculateFinalPercentMatch(diseasesInfo, ageGroup, userSex, familyHistoryProbability, symptomsProbability);
+
+    console.log(percentMatchResults);
+    res.json({ diseaseMatchResults: percentMatchResults });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'An error occurred while processing your request' });
+  }
 });
 
-function checkFamilyHistory(db, username, familyMember, disease, callback) {
-  const query = `
-    SELECT *
-    FROM familyhistory
-    WHERE username = ? AND family_member = ? AND disease = ?;
-  `;
-
-  db.query(query, [username, familyMember, disease], (error, results) => {
-    console.log(username, familyMember,disease);
-    if (error) {
-      console.error(error);
-      callback(false);
-    } else {
-      callback(results.length > 0);
-    }
-  });
+function categorizeAge(age) {
+  const ageNumber = parseInt(age, 10); 
+  if (ageNumber <= 1) return 'Newborn';
+  else if (ageNumber <= 12) return 'Child';
+  else if (ageNumber <= 65) return 'Adult';
+  else return 'Elderly';
 }
 
-function getTotalWeights(username, things) {
-  return new Promise((resolve, reject) => {
-    const diseaseWeights = {};
+function calculateFamilyHistoryProbability(familyHistoryResults) {
+  return familyHistoryResults.length > 0 ? 0.8 : 0.2;
+}
+function calculateSymptomsProbability(userSymptomsResults, diseasesInfo) {
+  const symptomsProbability = {};
 
-    const promises = things.map(({ disease, weight }) => {
-      if (!diseaseWeights[disease]) {
-        diseaseWeights[disease] = 0;
+  userSymptomsResults.forEach((symptomRow) => {
+    const userSymptom = symptomRow.symptom;
+
+    diseasesInfo.forEach((diseaseRow) => {
+      const diseaseName = diseaseRow.name;
+      const symptomsOccurrence = diseaseRow.symptomsOccurrence;
+
+      if (symptomsOccurrence && symptomsOccurrence.includes(userSymptom)) {
+        if (!symptomsProbability[diseaseName]) {
+          symptomsProbability[diseaseName] = 0;
+        }
+        symptomsProbability[diseaseName] += 0.2; 
       }
-      diseaseWeights[disease] += parseInt(weight);
-
-      return new Promise((resolve) => {
-        resolve(); 
-      });
+      
     });
-
-    Promise.all(promises)
-      .then(() => {
-        console.log(diseaseWeights);
-        resolve(diseaseWeights);
-      })
-      .catch((err) => {
-        console.error(err);
-        reject(err);
-      });
   });
+
+  return symptomsProbability;
 }
 
-function calculatePercentMatch(isFound, weight) {
-  return isFound ? parseInt(weight) : 0;
-}
+// Function to calculate final percent match
+function calculateFinalPercentMatch(diseasesInfo, ageGroup, userSex, familyHistoryProbability, symptomsProbability) {
+  const percentMatchResults = {};
 
-function checkThing(db, username, tableName, columnName, thing, callback) {
-  const query = `
-    SELECT *
-    FROM ${tableName}
-    WHERE username = ? AND ${columnName} = ?;
-  `;
+  diseasesInfo[0].forEach((diseaseRow) => {
+    const diseaseName = diseaseRow.name;
+    percentMatchResults[diseaseName] = 0.5; // Default percent match
 
-  db.query(query, [username, thing], (error, results) => {
-    if (error) {
-      console.error(error);
-      callback(false);
-    } else {
-      callback(results.length > 0);
+    // Adjust percent match based on age group, genetic effects, family history, and symptoms
+    console.log(ageGroup);
+    console.log(diseaseRow.symptomsOccurrence)
+    if (diseaseRow.symptomsOccurrence.includes(ageGroup)) {
+      percentMatchResults[diseaseName] += 0.1; // Adjust weight based on your criteria
+    }
+    
+
+    const geneticEffects = diseaseRow.geneticEffects;
+    if (geneticEffects === 'X-linked recessive' && userSex === 'M') {
+      percentMatchResults[diseaseName] += 0.2; // Adjust weight based on your criteria
+    }
+
+    percentMatchResults[diseaseName] += familyHistoryProbability;
+
+    if (symptomsProbability[diseaseName]) {
+      percentMatchResults[diseaseName] += symptomsProbability[diseaseName];
     }
   });
-}
 
+  return percentMatchResults;
+}
 
 
 app.post("/addsymptom", (req, res) => {
