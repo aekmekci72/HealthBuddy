@@ -1,7 +1,8 @@
 const express = require('express');
 const multer = require('multer');
 const path = require('path');
-const db = require('./db/db_connection.js').promise();
+const mysql = require('mysql2/promise');
+const db = require('./db/db_connection.js');
 const cors = require('cors');
 const logger = require('morgan');
 const bodyParser = require('body-parser');
@@ -24,8 +25,13 @@ app.use(bodyParser.urlencoded({ extended: false }));
 app.use(express.json());
 
 
-app.post("/login", (req, res) => {
+
+
+app.post("/login", async (req, res) => {
   const { username, password } = req.body;
+  console.log('here');
+  console.log('Username:', username);
+  console.log('Password:', password);
 
   const login_user_sql = `
     SELECT * 
@@ -33,18 +39,18 @@ app.post("/login", (req, res) => {
     WHERE username = ? AND password = ?;
   `;
 
-  db.query(login_user_sql, [username, password], (error, results) => {
-    if (error) {
-      console.error(error);
-      res.status(500).json({ message: 'An error occurred while processing your request' });
+  try {
+    const [results] = await db.query(login_user_sql, [username, password]);
+    console.log('here1');
+    if (results.length > 0) {
+      res.json({ message: 'Login successful' });
     } else {
-      if (results.length > 0) {
-        res.json({ message: 'Login successful' });
-      } else {
-        res.status(401).json({ message: 'Invalid username or password' });
-      }
+      res.status(401).json({ message: 'Invalid username or password' });
     }
-  });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'An error occurred while processing your request' });
+  }
 });
 
 const create_user_sql = `
@@ -52,39 +58,29 @@ const create_user_sql = `
         (username, password, email, name_first, name_last) 
     VALUES 
         (?, ?, ?, ?, ?);
-`
+`;
 
 const insert_user_info_sql = `
     INSERT INTO user_information
         (username)
     VALUES
         (?);
-`
+`;
 
-app.post("/signup", (req, res) => {
+app.post("/signup", async (req, res) => {
   const { username, password, email, name_first, name_last } = req.body;
 
-  db.execute(create_user_sql, [username, password, email, name_first, name_last], (error, results) => {
-      if (error) {
-          console.log(error);
-          res.status(500).send(error);
-      } else {
-          db.execute(insert_user_info_sql, [username], (error) => {
-            if (error) {
-                console.log(error);
-                res.status(500).send(error);
-            } else {
-                res.json({ message: 'Signup successful' });
-            }
-        });
-      }
-  });
+  try {
+    await db.execute(create_user_sql, [username, password, email, name_first, name_last]);
+    await db.execute(insert_user_info_sql, [username]);
+    res.json({ message: 'Signup successful' });
+  } catch (error) {
+    console.log(error);
+    res.status(500).send(error);
+  }
 });
 
-
-
-
-app.post("/profile", (req, res) => {
+app.post("/profile", async (req, res) => {
   const { username } = req.body;
 
   const get_user_profile_sql = `
@@ -93,22 +89,20 @@ app.post("/profile", (req, res) => {
     WHERE username = ?;
   `;
 
-  db.query(get_user_profile_sql, [username], (error, results) => {
-    if (error) {
-      console.error(error);
-      res.status(500).json({ message: 'An error occurred while processing your request' });
+  try {
+    const [results] = await db.query(get_user_profile_sql, [username]);
+    if (results.length > 0) {
+      res.json({ user: results[0] });
     } else {
-      if (results.length > 0) {
-        res.json({ user: results[0] });
-      } else {
-        res.status(404).json({ message: 'User not found' });
-      }
+      res.status(404).json({ message: 'User not found' });
     }
-  });
-  
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'An error occurred while processing your request' });
+  }
 });
 
-app.post("/userinfo", (req, res) => {
+app.post("/userinfo", async (req, res) => {
   const { username } = req.body;
 
   const get_user_profile_sql = `
@@ -117,72 +111,59 @@ app.post("/userinfo", (req, res) => {
     WHERE username = ?;
   `;
 
-  db.query(get_user_profile_sql, [username], (error, results) => {
-    if (error) {
-      console.error(error);
-      res.status(500).json({ message: 'An error occurred while processing your request' });
+  try {
+    const [results] = await db.query(get_user_profile_sql, [username]);
+    if (results.length > 0) {
+      res.json({ user: results[0] });
     } else {
-      if (results.length > 0) {
-        res.json({ user: results[0] });
-      } else {
-        res.status(404).json({ message: 'User not found' });
-      }
+      res.status(404).json({ message: 'User not found' });
     }
-  });
-      
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'An error occurred while processing your request' });
+  }
 });
 
-app.post("/getdiseases", (req, res) => {
+app.post("/getdiseases", async (req, res) => {
   const get_diseases_sql = `
     SELECT *
     FROM diseases
   `;
 
-  db.query(get_diseases_sql, (error, results) => {
-    if (error) {
-      console.error(error);
-      res.status(500).json({ message: 'An error occurred while processing your request' });
+  try {
+    const [results] = await db.query(get_diseases_sql);
+    if (results.length > 0) {
+      res.json({ user: results });
     } else {
-      if (results.length > 0) {
-        res.json({ user: results });
-      } else {
-        res.status(404).json({ message: 'User not found' });
-      }
+      res.status(404).json({ message: 'User not found' });
     }
-  });
-  
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'An error occurred while processing your request' });
+  }
 });
 
-app.post("/getyears", (req, res) => {
+app.post("/getyears", async (req, res) => {
   const get_years_sql = `
     SELECT *
     FROM years
     ORDER BY y desc
   `;
 
-  db.query(get_years_sql, (error, results) => {
-    if (error) {
-      console.error(error);
-      res.status(500).json({ message: 'An error occurred while processing your request' });
+  try {
+    const [results] = await db.query(get_years_sql);
+    if (results.length > 0) {
+      res.json({ user: results });
     } else {
-      if (results.length > 0) {
-        res.json({ user: results });
-      } else {
-        res.status(404).json({ message: 'User not found' });
-      }
+      res.status(404).json({ message: 'User not found' });
     }
-  });
-  
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'An error occurred while processing your request' });
+  }
 });
 
-
-
-
-
-
-
-
-app.post('/editusername', (req, res) => {
+app.post('/editusername', async (req, res) => {
   const { username, newValue } = req.body;
 
   const update_username_sql = `
@@ -191,19 +172,16 @@ app.post('/editusername', (req, res) => {
     WHERE username = ?;
   `;
 
-  db.query(update_username_sql, [newValue, username], (error, results) => {
-    if (error) {
-      console.error(error);
-      res.status(500).json({ message: 'An error occurred while processing your request' });
-    } else {
-      res.json({ message: 'Username updated successfully' });
-    }
-  });
+  try {
+    await db.query(update_username_sql, [newValue, username]);
+    res.json({ message: 'Username updated successfully' });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'An error occurred while processing your request' });
+  }
 });
 
-
-
-app.post('/editemail', (req, res) => {
+app.post('/editemail', async (req, res) => {
   const { username, newValue } = req.body;
 
   const update_email_sql = `
@@ -212,16 +190,16 @@ app.post('/editemail', (req, res) => {
     WHERE username = ?;
   `;
 
-  db.query(update_email_sql, [newValue, username], (error, results) => {
-    if (error) {
-      console.error(error);
-      res.status(500).json({ message: 'An error occurred while processing your request' });
-    } else {
-      res.json({ message: 'Email updated successfully' });
-    }
-  });
+  try {
+    await db.query(update_email_sql, [newValue, username]);
+    res.json({ message: 'Email updated successfully' });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'An error occurred while processing your request' });
+  }
 });
-app.post('/editname_first', (req, res) => {
+
+app.post('/editname_first', async (req, res) => {
   const { username, newValue } = req.body;
 
   const update_name_first_sql = `
@@ -230,16 +208,16 @@ app.post('/editname_first', (req, res) => {
     WHERE username = ?;
   `;
 
-  db.query(update_name_first_sql, [newValue, username], (error, results) => {
-    if (error) {
-      console.error(error);
-      res.status(500).json({ message: 'An error occurred while processing your request' });
-    } else {
-      res.json({ message: 'First name updated successfully' });
-    }
-  });
+  try {
+    await db.query(update_name_first_sql, [newValue, username]);
+    res.json({ message: 'First name updated successfully' });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'An error occurred while processing your request' });
+  }
 });
-app.post('/editname_last', (req, res) => {
+
+app.post('/editname_last', async (req, res) => {
   const { username, newValue } = req.body;
 
   const update_name_last_sql = `
@@ -248,17 +226,16 @@ app.post('/editname_last', (req, res) => {
     WHERE username = ?;
   `;
 
-  db.query(update_name_last_sql, [newValue, username], (error, results) => {
-    if (error) {
-      console.error(error);
-      res.status(500).json({ message: 'An error occurred while processing your request' });
-    } else {
-      res.json({ message: 'Last name updated successfully' });
-    }
-  });
+  try {
+    await db.query(update_name_last_sql, [newValue, username]);
+    res.json({ message: 'Last name updated successfully' });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'An error occurred while processing your request' });
+  }
 });
 
-app.post('/editage', (req, res) => {
+app.post('/editage', async (req, res) => {
   const { username, newValue } = req.body;
   console.log(username);
   const update_age_sql = `
@@ -267,17 +244,16 @@ app.post('/editage', (req, res) => {
     WHERE username = ?;
   `;
 
-  db.query(update_age_sql, [newValue, username], (error, results) => {
-    if (error) {
-      console.error(error);
-      res.status(500).json({ message: 'An error occurred while processing your request' });
-    } else {
-      res.json({ message: 'Age updated successfully' });
-    }
-  });
+  try {
+    await db.query(update_age_sql, [newValue, username]);
+    res.json({ message: 'Age updated successfully' });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'An error occurred while processing your request' });
+  }
 });
 
-app.post('/editsex', (req, res) => {
+app.post('/editsex', async (req, res) => {
   const { username, newValue } = req.body;
 
   const update_sex_sql = `
@@ -286,17 +262,16 @@ app.post('/editsex', (req, res) => {
     WHERE username = ?;
   `;
 
-  db.query(update_sex_sql, [newValue, username], (error, results) => {
-    if (error) {
-      console.error(error);
-      res.status(500).json({ message: 'An error occurred while processing your request' });
-    } else {
-      res.json({ message: 'Sex updated successfully' });
-    }
-  });
+  try {
+    await db.query(update_sex_sql, [newValue, username]);
+    res.json({ message: 'Sex updated successfully' });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'An error occurred while processing your request' });
+  }
 });
 
-app.post('/editheight', (req, res) => {
+app.post('/editheight', async (req, res) => {
   const { username, newValue } = req.body;
 
   const update_height_sql = `
@@ -305,17 +280,16 @@ app.post('/editheight', (req, res) => {
     WHERE username = ?;
   `;
 
-  db.query(update_height_sql, [newValue, username], (error, results) => {
-    if (error) {
-      console.error(error);
-      res.status(500).json({ message: 'An error occurred while processing your request' });
-    } else {
-      res.json({ message: 'Height updated successfully' });
-    }
-  });
+  try {
+    await db.query(update_height_sql, [newValue, username]);
+    res.json({ message: 'Height updated successfully' });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'An error occurred while processing your request' });
+  }
 });
 
-app.post('/editweight', (req, res) => {
+app.post('/editweight', async (req, res) => {
   const { username, newValue } = req.body;
 
   const update_weight_sql = `
@@ -324,18 +298,16 @@ app.post('/editweight', (req, res) => {
     WHERE username = ?;
   `;
 
-  db.query(update_weight_sql, [newValue, username], (error, results) => {
-    if (error) {
-      console.error(error);
-      res.status(500).json({ message: 'An error occurred while processing your request' });
-    } else {
-      res.json({ message: 'Weight updated successfully' });
-    }
-  });
+  try {
+    await db.query(update_weight_sql, [newValue, username]);
+    res.json({ message: 'Weight updated successfully' });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'An error occurred while processing your request' });
+  }
 });
 
-
-app.post("/addfamilyhistory", (req, res) => {
+app.post("/addfamilyhistory", async (req, res) => {
   const { username, disease, generation } = req.body;
 
   const insertFamilyHistorySql = `
@@ -343,18 +315,16 @@ app.post("/addfamilyhistory", (req, res) => {
     VALUES (?, ?, ?);
   `;
 
-  db.query(insertFamilyHistorySql, [username, disease, generation], (error, results) => {
-    if (error) {
-      console.error(error);
-      res.status(500).json({ message: 'An error occurred while processing your request' });
-    } else {
-      res.json({ message: 'Family history added successfully' });
-    }
-  });
+  try {
+    await db.query(insertFamilyHistorySql, [username, disease, generation]);
+    res.json({ message: 'Family history added successfully' });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'An error occurred while processing your request' });
+  }
 });
 
-
-app.post("/deletefamilyhistory", (req, res) => {
+app.post("/deletefamilyhistory", async (req, res) => {
   const { username, disease, generation } = req.body;
 
   const deleteFamilyHistorySql = `
@@ -362,17 +332,16 @@ app.post("/deletefamilyhistory", (req, res) => {
     WHERE username = ? AND disease = ? AND generation = ?;
   `;
 
-  db.query(deleteFamilyHistorySql, [username, disease, generation], (error, results) => {
-    if (error) {
-      console.error(error);
-      res.status(500).json({ message: 'An error occurred while processing your request' });
-    } else {
-      res.json({ message: 'Family history deleted successfully' });
-    }
-  });
+  try {
+    await db.query(deleteFamilyHistorySql, [username, disease, generation]);
+    res.json({ message: 'Family history deleted successfully' });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'An error occurred while processing your request' });
+  }
 });
 
-app.post('/getuserfamilyhistory', (req, res) => {
+app.post('/getuserfamilyhistory', async (req, res) => {
   const { username } = req.body;
 
   const getUserFamilyHistorySql = `
@@ -381,24 +350,17 @@ app.post('/getuserfamilyhistory', (req, res) => {
     WHERE username = ?;
   `;
 
-  db.query(getUserFamilyHistorySql, [username], (error, results) => {
-    if (error) {
-      console.error(error);
-      res.status(500).json({ message: 'An error occurred while processing your request' });
-    } else {
-      const userFamilyHistory = results.map(row => ({ disease: row.disease, generation: row.generation }));
-      res.json({ user: userFamilyHistory });
-    }
-  });
+  try {
+    const [results] = await db.query(getUserFamilyHistorySql, [username]);
+    const userFamilyHistory = results.map(row => ({ disease: row.disease, generation: row.generation }));
+    res.json({ user: userFamilyHistory });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'An error occurred while processing your request' });
+  }
 });
 
-
-
-
-
-
-
-app.post("/addmedicalhistory", (req, res) => {
+app.post("/addmedicalhistory", async (req, res) => {
   const { username, disease, year } = req.body;
 
   const insertMedicalHistorySql = `
@@ -406,18 +368,16 @@ app.post("/addmedicalhistory", (req, res) => {
     VALUES (?, ?, ?);
   `;
 
-  db.query(insertMedicalHistorySql, [username, disease, year], (error, results) => {
-    if (error) {
-      console.error(error);
-      res.status(500).json({ message: 'An error occurred while processing your request' });
-    } else {
-      res.json({ message: 'Medical history added successfully' });
-    }
-  });
+  try {
+    await db.query(insertMedicalHistorySql, [username, disease, year]);
+    res.json({ message: 'Medical history added successfully' });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'An error occurred while processing your request' });
+  }
 });
 
-
-app.post("/deletemedicalhistory", (req, res) => {
+app.post("/deletemedicalhistory", async (req, res) => {
   const { username, disease, year } = req.body;
 
   const deleteMedicalHistorySql = `
@@ -425,17 +385,16 @@ app.post("/deletemedicalhistory", (req, res) => {
     WHERE username = ? AND disease = ? AND year = ?;
   `;
 
-  db.query(deleteMedicalHistorySql, [username, disease, year], (error, results) => {
-    if (error) {
-      console.error(error);
-      res.status(500).json({ message: 'An error occurred while processing your request' });
-    } else {
-      res.json({ message: 'Medical history deleted successfully' });
-    }
-  });
+  try {
+    await db.query(deleteMedicalHistorySql, [username, disease, year]);
+    res.json({ message: 'Medical history deleted successfully' });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'An error occurred while processing your request' });
+  }
 });
 
-app.post('/getusermedicalhistory', (req, res) => {
+app.post('/getusermedicalhistory', async (req, res) => {
   const { username } = req.body;
 
   const getUserMedicalHistorySql = `
@@ -445,19 +404,21 @@ app.post('/getusermedicalhistory', (req, res) => {
     ORDER BY year desc;
   `;
 
-  db.query(getUserMedicalHistorySql, [username], (error, results) => {
-    if (error) {
-      console.error(error);
-      res.status(500).json({ message: 'An error occurred while processing your request' });
-    } else {
-      const userMedicalHistory = results.map(row => ({ disease: row.disease, year: row.year }));
-      res.json({ user: userMedicalHistory });
-    }
-  });
+  try {
+    const [results] = await db.query(getUserMedicalHistorySql, [username]);
+    const userMedicalHistory = results.map(row => ({ disease: row.disease, year: row.year }));
+    res.json({ user: userMedicalHistory });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'An error occurred while processing your request' });
+  }
 });
+
+
 app.post('/calculatepercentagematch', async (req, res) => {
   const { username } = req.body;
 
+  console.log(username);
   const getAllDiseasesInfoSql = `
     SELECT name, symptomsOccurrence, geneticEffects
     FROM diseases;
@@ -472,7 +433,9 @@ app.post('/calculatepercentagematch', async (req, res) => {
     `;
 
     const ageResult = await db.query(getUserAgeSql, [username]);
-    const userAge = ageResult[0].age;
+    console.log(ageResult);
+    const userAge = ageResult[0][0].age;
+    console.log(userAge);
     const ageGroup = categorizeAge(userAge);
 
     const getUserSexSql = `
@@ -482,7 +445,7 @@ app.post('/calculatepercentagematch', async (req, res) => {
     `;
 
     const sexResult = await db.query(getUserSexSql, [username]);
-    const userSex = sexResult[0].sex;
+    const userSex = sexResult[0][0].sex;
 
     const getUserFamilyHistorySql = `
       SELECT disease, generation
@@ -500,9 +463,8 @@ app.post('/calculatepercentagematch', async (req, res) => {
     `;
 
     const userSymptomsResults = await db.query(getUserSymptomsSql, [username]);
-    const symptomsProbability = calculateSymptomsProbability(userSymptomsResults, diseasesInfo);
 
-    const percentMatchResults = calculateFinalPercentMatch(diseasesInfo, ageGroup, userSex, familyHistoryProbability, symptomsProbability);
+    const percentMatchResults = await calculateFinalPercentMatch(username, diseasesInfo, ageGroup, userSex, familyHistoryProbability, userSymptomsResults);
 
     console.log(percentMatchResults);
     res.json({ diseaseMatchResults: percentMatchResults });
@@ -512,154 +474,258 @@ app.post('/calculatepercentagematch', async (req, res) => {
   }
 });
 
-function categorizeAge(age) {
-  const ageNumber = parseInt(age, 10); 
-  if (ageNumber <= 1) return 'Newborn';
-  else if (ageNumber <= 12) return 'Child';
-  else if (ageNumber <= 65) return 'Adult';
-  else return 'Elderly';
-}
-
-function calculateFamilyHistoryProbability(familyHistoryResults) {
-  return familyHistoryResults.length > 0 ? 0.8 : 0.2;
-}
-function calculateSymptomsProbability(userSymptomsResults, diseasesInfo) {
-  const symptomsProbability = {};
-
-  userSymptomsResults.forEach((symptomRow) => {
-    const userSymptom = symptomRow.symptom;
-
-    diseasesInfo.forEach((diseaseRow) => {
-      const diseaseName = diseaseRow.name;
-      const symptomsOccurrence = diseaseRow.symptomsOccurrence;
-
-      if (symptomsOccurrence && symptomsOccurrence.includes(userSymptom)) {
-        if (!symptomsProbability[diseaseName]) {
-          symptomsProbability[diseaseName] = 0;
-        }
-        symptomsProbability[diseaseName] += 0.2; 
-      }
-      
-    });
-  });
-
-  return symptomsProbability;
-}
-
-// Function to calculate final percent match
-function calculateFinalPercentMatch(diseasesInfo, ageGroup, userSex, familyHistoryProbability, symptomsProbability) {
+async function calculateFinalPercentMatch(username, diseasesInfo, ageGroup, userSex, familyHistoryProbability, userSymptomsResults) {
   const percentMatchResults = {};
+  const totalMatches = {};
 
-  diseasesInfo[0].forEach((diseaseRow) => {
+  await Promise.all(diseasesInfo[0].map(async (diseaseRow) => {
     const diseaseName = diseaseRow.name;
-    percentMatchResults[diseaseName] = 0.5; // Default percent match
+    percentMatchResults[diseaseName] = 0.5;
+    totalMatches[diseaseName] = 0;
 
-    // Adjust percent match based on age group, genetic effects, family history, and symptoms
-    console.log(ageGroup);
-    console.log(diseaseRow.symptomsOccurrence)
-    if (diseaseRow.symptomsOccurrence.includes(ageGroup)) {
-      percentMatchResults[diseaseName] += 0.1; // Adjust weight based on your criteria
+    if (diseaseRow.symptomsOccurrence.includes(ageGroup) || diseaseRow.symptomsOccurrence.includes('variety of ages') || diseaseRow.symptomsOccurrence.includes('any time in life')) {
+      percentMatchResults[diseaseName] += 0.1;
+      console.log(diseaseRow.symptomsOccurrence);
+    }
+    totalMatches[diseaseName]+=0.1
+
+    const geneticEffects = diseaseRow.geneticEffects;
+    if (geneticEffects === 'X-Linked Recessive' && userSex === 'F') {
+      console.log(geneticEffects, diseaseName);
+      const isInFamilyHistory = await familyHistoryProbability[diseaseName];
+      console.log(isInFamilyHistory);
+      if (isInFamilyHistory) {
+        percentMatchResults[diseaseName] += isInFamilyHistory;
+      }
+      totalMatches[diseaseName]+=0.99
+    } else if (geneticEffects !== 'X-Linked Recessive') {
+      const isInFamilyHistory = await familyHistoryProbability[diseaseName];
+      console.log('yeee', diseaseName);
+      if (isInFamilyHistory) {
+        percentMatchResults[diseaseName] += isInFamilyHistory;
+      }
+      totalMatches[diseaseName]+=0.99
     }
     
 
-    const geneticEffects = diseaseRow.geneticEffects;
-    if (geneticEffects === 'X-linked recessive' && userSex === 'M') {
-      percentMatchResults[diseaseName] += 0.2; // Adjust weight based on your criteria
-    }
-
-    percentMatchResults[diseaseName] += familyHistoryProbability;
+    const symptomsProbability = await calculateSymptomsProbability(username, userSymptomsResults, diseaseRow);
+    console.log(symptomsProbability);
 
     if (symptomsProbability[diseaseName]) {
       percentMatchResults[diseaseName] += symptomsProbability[diseaseName];
     }
+
+
+    const getDiseaseSymptomsSql = `
+      SELECT symptom
+      FROM disease_symptom_xref
+      WHERE disease = ?;
+    `;
+    const [diseaseSymptoms] = await db.query(getDiseaseSymptomsSql, [diseaseName]);
+    diseaseSymptoms.forEach(symptomRow => {
+      totalMatches[diseaseName] += 0.2;
+
+      console.log(`Disease: ${diseaseName}, Symptom: ${symptomRow.symptom}`);
+    });
+    
+  }));
+
+  const percentageResults = {};
+  Object.keys(percentMatchResults).forEach((diseaseName) => {
+    const percentMatch = percentMatchResults[diseaseName];
+    const totalMatch = totalMatches[diseaseName];
+    const percentage = totalMatch > 0 ? (percentMatch / totalMatch) * 100 : 0;
+    percentageResults[diseaseName] = percentage; // Round to 2 decimal places if needed
   });
 
-  return percentMatchResults;
+  return percentageResults;
+}
+
+async function calculateSymptomsProbability(username, userSymptomsResults, diseaseRow) {
+  const symptomsProbability = {};
+  const userSymptoms = userSymptomsResults[0].map(row => row.symptom);
+
+  for (const userSymptom of userSymptoms) {
+    const diseaseName = diseaseRow.name;
+
+    if (!symptomsProbability[diseaseName]) {
+      symptomsProbability[diseaseName] = 0;
+    }
+
+    const getDSXref = `
+      SELECT *
+      FROM disease_symptom_xref
+      WHERE disease = ?;
+    `;
+
+    const [disease_symptom_xref] = await db.query(getDSXref, [diseaseName]);
+    const hasSymptom = disease_symptom_xref.some(row => row.disease === diseaseName && row.symptom === userSymptom);
+
+    if (hasSymptom) {
+      symptomsProbability[diseaseName] += 0.2;
+      console.log('yes');
+    }
+  }
+
+  return symptomsProbability;
 }
 
 
-app.post("/addsymptom", (req, res) => {
-  const { username, symptom, date } = req.body;
 
-  const insertSymptomsSql = `
-    INSERT INTO symptoms (username, symptom, date)
-    VALUES (?, ?, ?);
-  `;
 
-  db.query(insertSymptomsSql, [username, symptom, date], (error, results) => {
+
+
+
+function categorizeAge(age) {
+  console.log(age);
+  const ageNumber = parseInt(age, 10);
+
+  if (isNaN(ageNumber)) {
+    return 'Unknown';
+  }
+
+  if (ageNumber <= 1) return 'Newborn';
+  else if (ageNumber <= 12) return 'Child';
+  else if (ageNumber <= 19) return 'Teenager';
+  else if (ageNumber <= 65) return 'Adult';
+  else return 'Elderly';
+}
+
+async function calculateFamilyHistoryProbability(familyHistoryResults) {
+  console.log(familyHistoryResults);
+
+  if (!familyHistoryResults || familyHistoryResults.length === 0) {
+    return {}; 
+  }
+
+  const familyHistoryProbability = {};
+  familyHistoryResults[0].forEach((historyRow) => {
+    const diseaseName = historyRow.disease;
+
+    if (!familyHistoryProbability[diseaseName]) {
+      familyHistoryProbability[diseaseName] = 0;
+    }
+
+    const generation = historyRow.generation;
+    let probability = Math.pow(0.5, generation);
+
+    familyHistoryProbability[diseaseName] += probability;
+  });
+
+  return familyHistoryProbability;
+}
+
+
+
+
+// function calculateFinalPercentMatch(diseasesInfo, ageGroup, userSex, familyHistoryProbability, symptomsProbability) {
+//   const percentMatchResults = {};
+
+//   diseasesInfo[0].forEach((diseaseRow) => {
+//     const diseaseName = diseaseRow.name;
+//     percentMatchResults[diseaseName] = 0.5; 
+
+//     if (diseaseRow.symptomsOccurrence.includes(ageGroup) || diseaseRow.symptomsOccurrence.includes('variety of ages') || diseaseRow.symptomsOccurrence.includes('any time in life')) {
+//       percentMatchResults[diseaseName] += 0.1;
+//       console.log(diseaseRow.symptomsOccurrence);
+//     }
+
+//     const geneticEffects = diseaseRow.geneticEffects;
+//     if (geneticEffects === 'X-Linked Recessive' && userSex === 'F') {
+//       percentMatchResults[diseaseName];
+//       console.log(geneticEffects);
+//       const isInFamilyHistory = familyHistoryProbability[diseaseName];
+//         console.log(isInFamilyHistory);
+//         if (isInFamilyHistory) {
+//           percentMatchResults[diseaseName] += isInFamilyHistory;
+//         }
+//     }
+//     else if (geneticEffects !='X-Linked Recessive'){
+//       const isInFamilyHistory = familyHistoryProbability[diseaseName];
+//         console.log(isInFamilyHistory);
+//         if (isInFamilyHistory) {
+//           percentMatchResults[diseaseName] += isInFamilyHistory;
+//         }
+//     }
+
     
-    if (error) {
-      console.error(error);
-      res.status(500).json({ message: 'An error occurred while processing your request' });
-    } else {
-      res.json({ message: 'Symptoms added successfully' });
-    }
-  });
+//     console.log(symptomsProbability[diseaseName]);
+//     console.log(diseaseName);
+
+//     if (symptomsProbability[diseaseName]) {
+//       percentMatchResults[diseaseName] += symptomsProbability[diseaseName];
+//     }
+//   });
+
+//   return percentMatchResults;
+// }
+
+
+app.post("/addsymptom", async (req, res) => {
+  try {
+    const { username, symptom, date } = req.body;
+    const insertSymptomsSql = `
+      INSERT INTO symptoms (username, symptom, date)
+      VALUES (?, ?, ?);
+    `;
+    await db.query(insertSymptomsSql, [username, symptom, date]);
+    res.json({ message: 'Symptoms added successfully' });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'An error occurred while processing your request' });
+  }
 });
 
-
-app.post("/deletesymptom", (req, res) => {
-  const { username, symptom, date } = req.body;
-  console.log(username,symptom,date);
-  const deleteSymptomSql = `
-    DELETE FROM symptoms
-    WHERE username = ? AND symptom = ? AND date = ?;
-  `;
-
-  db.query(deleteSymptomSql, [username, symptom, date], (error, results) => {
-    if (error) {
-      console.error(error);
-      res.status(500).json({ message: 'An error occurred while processing your request' });
-    } else {
-      res.json({ message: 'Symptom deleted successfully' });
-    }
-  });
+app.post("/deletesymptom", async (req, res) => {
+  try {
+    const { username, symptom, date } = req.body;
+    const deleteSymptomSql = `
+      DELETE FROM symptoms
+      WHERE username = ? AND symptom = ? AND date = ?;
+    `;
+    await db.query(deleteSymptomSql, [username, symptom, date]);
+    res.json({ message: 'Symptom deleted successfully' });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'An error occurred while processing your request' });
+  }
 });
 
-app.post('/getusersymptoms', (req, res) => {
-  const { username } = req.body;
-
-  const getUserSymptomsSql = `
-    SELECT symptom, date
-    FROM symptoms
-    WHERE username = ?;
-  `;
-
-  db.query(getUserSymptomsSql, [username], (error, results) => {
-    if (error) {
-      console.error(error);
-      res.status(500).json({ message: 'An error occurred while processing your request' });
-    } else {
-      const userSymptoms = results.map(row => ({ symptom: row.symptom, date: row.date }));
-      res.json({ user: userSymptoms });
-    }
-  });
+app.post('/getusersymptoms', async (req, res) => {
+  try {
+    const { username } = req.body;
+    const getUserSymptomsSql = `
+      SELECT symptom, date
+      FROM symptoms
+      WHERE username = ?;
+    `;
+    const results = await db.query(getUserSymptomsSql, [username]);
+    const userSymptoms = results.map(row => ({ symptom: row.symptom, date: row.date }));
+    res.json({ user: userSymptoms });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'An error occurred while processing your request' });
+  }
 });
 
-
-app.post("/getsymptoms", (req, res) => {
-  const get_symptoms_sql = `
-    SELECT DISTINCT symptom
-    FROM disease_symptom_xref
-    ORDER BY symptom
-  `;
-
-  db.query(get_symptoms_sql, (error, results) => {
-    if (error) {
-      console.error(error);
-      res.status(500).json({ message: 'An error occurred while processing your request' });
+app.post("/getsymptoms", async (req, res) => {
+  try {
+    const get_symptoms_sql = `
+      SELECT DISTINCT symptom
+      FROM disease_symptom_xref
+      ORDER BY symptom
+    `;
+    const results = await db.query(get_symptoms_sql);
+    if (results.length > 0) {
+      res.json({ user: results });
     } else {
-      if (results.length > 0) {
-        res.json({ user: results });
-      } else {
-        res.status(404).json({ message: 'User not found' });
-      }
+      res.status(404).json({ message: 'User not found' });
     }
-  });
-  
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'An error occurred while processing your request' });
+  }
 });
-
-
 
 
 app.listen(5000, () => {

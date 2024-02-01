@@ -14,12 +14,11 @@ const Results = () => {
         const diseaseMatchResults = response.data.diseaseMatchResults;
 
         if (diseaseMatchResults && typeof diseaseMatchResults === 'object') {
-          setDiseaseMatches(
-            Object.entries(diseaseMatchResults).map(([disease, percent]) => ({
-              disease,
-              percent,
-            }))
-          );
+          const sortedDiseaseMatches = Object.entries(diseaseMatchResults)
+            .map(([disease, percent]) => ({ disease, percent }))
+            .sort((a, b) => b.percent - a.percent) 
+            .slice(0,5);
+          setDiseaseMatches(sortedDiseaseMatches);
         } else {
           console.error('Invalid disease match data format in the response');
         }

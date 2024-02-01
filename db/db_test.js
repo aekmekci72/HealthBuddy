@@ -1,6 +1,6 @@
 const db = require("./db_connection")
 
-db.execute('INSERT INTO music_ccchallenge (file) VALUES ("hfdiaugfbaskdyfbg");', 
+db.execute('INSERT INTO diseases (name) VALUES ("hi");', 
     (error, results) => {
         if (error)
             throw error;
