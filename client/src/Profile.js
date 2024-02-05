@@ -3,7 +3,15 @@ import axios from 'axios';
 // import bg_profile2 from './assets/bg_profile2.png';
 // import profileheading from './assets/profileheading.png';
 import profilePictures from './profilePictures/profilePictures'; // Import the profilePictures object
+import { FaUser, FaHome, FaInfoCircle, FaHistory, FaNotesMedical, FaChartLine, FaList, FaQuestion } from 'react-icons/fa';
+import { Link } from 'react-router-dom';
 
+const SidebarButton = ({ to, icon, text }) => (
+  <Link to={to} className="flex items-center mb-4 text-black-resonate hover:text-white">
+    <span className="mr-2">{icon}</span>
+    <span>{text}</span>
+  </Link>
+);
 const Profile = () => {
   const [userProfile, setUserProfile] = useState(null);
   const [editingField, setEditingField] = useState(null);
@@ -63,13 +71,30 @@ const Profile = () => {
 
 
   return (
+    <div className="flex">
+      {/* Sidebar/Navbar */}
+      <div className="bg-yellow-resonate w-1/6 p-6">
+      <div className="mb-4 text-black text-2xl font-bold">
+          Health Buddy
+        </div>
+        <SidebarButton to="/homepage" icon={<FaHome />} text="Home" />
+        <SidebarButton to="/profile" icon={<FaUser />} text="Profile" />
+        <SidebarButton to="/userinformation" icon={<FaInfoCircle />} text="General Info" />
+        <SidebarButton to="/familyhistory" icon={<FaHistory />} text="Family History" />
+        <SidebarButton to="/medicalhistory" icon={<FaNotesMedical />} text="Medical History" />
+        <SidebarButton to="/symptomtracker" icon={<FaChartLine />} text="Symptom Tracker" />
+        <SidebarButton to="/results" icon={<FaList />} text="Results" />
+        <SidebarButton to="/about" icon={<FaQuestion />} text="About" />
+      </div>
+      <div className="bg-white-resonate min-h-screen w-5/6 p-10">
+
     
     <div className="bg-white-resonate min-h-screen flex flex-col items-center relative">
-      <div className="flex items-center relative mt-40">
-        <h1 className="font-reborn text-9xl text-black-resonate mx-[-25px]">Profile</h1>
-      </div>
+      <div className="flex items-center justify-center mt-5">
+          <h1 className=" text-9xl text-grey-resonate">Profile</h1>
+        </div>
       
-      <div className="flex items-center flex-col mt-[14%]">
+      <div className="flex items-center flex-col mt-[17%]">
       <div>
           
           <div classname="mt-[-15%]">
@@ -89,7 +114,7 @@ const Profile = () => {
       };
 
       const displayField = fieldMappings[field] || field; // Use the mapped value or the field itself
-
+      
       return (
         <div
           key={field}
@@ -133,6 +158,8 @@ const Profile = () => {
 
 
 
+          </div>
+          </div>
           </div>
           </div>
           </div>
