@@ -38,7 +38,18 @@ const LoginPage = () => {
   };
 
   return (
+    <div>
+      
+    
     <div style={styles.page_container}>
+      <div className='bg-white-resonate '>
+    <div className="flex items-center justify-center mt-5">
+        <h1 className=" text-9xl text-grey-resonate">Log</h1>
+      </div>
+      <div className="flex items-center justify-center mt-0">
+        <h1 className=" text-9xl text-grey-resonate mx-[-0px]">In</h1>
+      </div>
+      
       <div style={styles.container}>
         <div style={styles.inputContainer}>
           <label>Username:</label>
@@ -63,6 +74,8 @@ const LoginPage = () => {
         </button>
         {errorMessage && <p style={styles.error}>{errorMessage}</p>}
       </div>
+    </div>
+    </div>
     </div>
   );
 };

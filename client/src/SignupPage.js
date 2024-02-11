@@ -98,6 +98,13 @@ const SignupPage = () => {
 
   return (
     <div style={styles.page_container}>
+      <div className='bg-white-resonate '>
+    <div className="flex items-center justify-center mt-20">
+        <h1 className=" text-9xl text-grey-resonate">Sign</h1>
+      </div>
+      <div className="flex items-center justify-center mt-0">
+        <h1 className=" text-9xl text-grey-resonate mx-[-0px]">Up</h1>
+      </div>
       <div style={styles.container}>
         <div style={styles.inputContainer}>
           <label>Username:</label>
@@ -149,6 +156,7 @@ const SignupPage = () => {
         </button>
         {errorMessage && <p style={styles.error}>{errorMessage}</p>}
       </div>
+    </div>
     </div>
   );
 };
