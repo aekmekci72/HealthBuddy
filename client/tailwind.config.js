@@ -12,9 +12,12 @@ module.exports = {
         'yellow3-resonate': '#FAF5CC',
         'orange-resonate': '#F4D487',
         'black-resonate': '#423F32',
+        'beige-resonate': '#9F9D81',
+        
       },
       textColor:{
         'black-resonate': '#423F32',
+        'beige-resonate': '#9F9D81',
       },
       borderColor: {
         'green-resonate2': '#979D92',

@@ -4,7 +4,7 @@ import { Link } from 'react-router-dom';
 import { FaUser, FaHome, FaInfoCircle, FaHistory, FaNotesMedical, FaChartLine, FaList, FaQuestion } from 'react-icons/fa';
 
 const SidebarButton = ({ to, icon, text }) => (
-  <Link to={to} className="flex items-center mb-4 text-black-resonate hover:text-white">
+  <Link to={to} className="flex items-center mb-4 text-black-resonate hover:text-beige-resonate">
     <span className="mr-2">{icon}</span>
     <span>{text}</span>
   </Link>
@@ -78,23 +78,26 @@ const handleAddFamilyHistory = () => {
 
 
 
-  const handleDeleteFamilyHistory = (familyHistoryItem) => {
-    if (familyHistoryItem.disease && familyHistoryItem.familyMember) {
-      const storedUsername = localStorage.getItem('username');
-      axios.post('http://localhost:5000/deletefamilyhistory', {
-        username: storedUsername,
-        disease: familyHistoryItem.disease,
-        generation: familyHistoryItem.generation,
+const handleDeleteFamilyHistory = (familyHistoryItem) => {
+  if (familyHistoryItem.disease && familyHistoryItem.generation) {
+    const storedUsername = localStorage.getItem('username');
+    axios.post('http://localhost:5000/deletefamilyhistory', {
+      username: storedUsername,
+      disease: familyHistoryItem.disease,
+      generation: familyHistoryItem.generation,
+    })
+      .then(response => {
+        const updatedUserFamilyHistory = userFamilyHistory.filter(item =>
+          item.disease !== familyHistoryItem.disease || item.generation !== familyHistoryItem.generation
+        );
+        setUserFamilyHistory(updatedUserFamilyHistory);
       })
-        .then(response => {
-          const updatedUserFamilyHistory = userFamilyHistory.filter(item => item !== familyHistoryItem);
-          setUserFamilyHistory(updatedUserFamilyHistory);
-        })
-        .catch(error => {
-          console.error('Error deleting family history:', error);
-        });
-    }
-  };
+      .catch(error => {
+        console.error('Error deleting family history:', error);
+      });
+  }
+};
+
   
   
 
@@ -109,7 +112,6 @@ const handleAddFamilyHistory = () => {
         <SidebarButton to="/profile" icon={<FaUser />} text="Profile" />
         <SidebarButton to="/userinformation" icon={<FaInfoCircle />} text="General Info" />
         <SidebarButton to="/familyhistory" icon={<FaHistory />} text="Family History" />
-        <SidebarButton to="/medicalhistory" icon={<FaNotesMedical />} text="Medical History" />
         <SidebarButton to="/symptomtracker" icon={<FaChartLine />} text="Symptom Tracker" />
         <SidebarButton to="/results" icon={<FaList />} text="Results" />
         <SidebarButton to="/about" icon={<FaQuestion />} text="About" />

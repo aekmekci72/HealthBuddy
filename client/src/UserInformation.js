@@ -7,7 +7,7 @@ import { FaUser, FaHome, FaInfoCircle, FaHistory, FaNotesMedical, FaChartLine, F
 import { Link } from 'react-router-dom';
 
 const SidebarButton = ({ to, icon, text }) => (
-  <Link to={to} className="flex items-center mb-4 text-black-resonate hover:text-white">
+  <Link to={to} className="flex items-center mb-4 text-black-resonate hover:text-beige-resonate">
     <span className="mr-2">{icon}</span>
     <span>{text}</span>
   </Link>
@@ -84,7 +84,6 @@ const UserInformation = () => {
         <SidebarButton to="/profile" icon={<FaUser />} text="Profile" />
         <SidebarButton to="/userinformation" icon={<FaInfoCircle />} text="General Info" />
         <SidebarButton to="/familyhistory" icon={<FaHistory />} text="Family History" />
-        <SidebarButton to="/medicalhistory" icon={<FaNotesMedical />} text="Medical History" />
         <SidebarButton to="/symptomtracker" icon={<FaChartLine />} text="Symptom Tracker" />
         <SidebarButton to="/results" icon={<FaList />} text="Results" />
         <SidebarButton to="/about" icon={<FaQuestion />} text="About" />
@@ -92,22 +91,23 @@ const UserInformation = () => {
 
     
       <div className="bg-white-resonate min-h-screen w-5/6 p-10">
+        <div className="bg-white-resonate min-h-screen flex flex-col items-center relative">
     <div className="flex items-center justify-center mt-5">
           <h1 className=" text-9xl text-grey-resonate">General</h1>
         </div>
         <div className="flex items-center justify-center mt-0">
-          <h1 className=" text-9xl text-grey-resonate mx-[-25px]">Information</h1>
+          <h1 className=" text-9xl text-grey-resonate ">Information</h1>
         </div>
-      <div className="flex items-center flex-col mt-[17%]">
+      <div className="flex items-center flex-col mt-[10%]">
       <div>
           
-          <div classname="mt-[-65%]">
+          <div classname="mt-[0%]">
             {}
             {}
         
             
             {userProfile && (
-  <div className='mt-[-170%]'>
+  <div className='mt-[-100%]'>
     {/* Display user information */}
     {Object.keys(userProfile).map((field) => {
       // Define a mapping for specific fields
@@ -124,6 +124,7 @@ const UserInformation = () => {
           key={field}
           className="flex items-center space-x-1 overflow-x-hidden justify-center"
           style={{ overflowWrap: 'break-word' }}
+          
         >
           {isEditing && editingField === field ? (
             <>
@@ -134,7 +135,6 @@ const UserInformation = () => {
               />
               <button
                 onClick={handleSubmitEdit}
-                className="bg-blue-500 hover:bg-blue-700 text-white font-semibold py-1 px-2 rounded"
               >
                 Submit
               </button>
@@ -163,6 +163,7 @@ const UserInformation = () => {
 
 
 
+          </div>
           </div>
           </div>
           </div>

@@ -334,6 +334,7 @@ app.post("/deletefamilyhistory", async (req, res) => {
 
   try {
     await db.query(deleteFamilyHistorySql, [username, disease, generation]);
+    console.log(username, disease, generation);
     res.json({ message: 'Family history deleted successfully' });
   } catch (error) {
     console.error(error);
@@ -418,7 +419,6 @@ app.post('/getusermedicalhistory', async (req, res) => {
 app.post('/calculatepercentagematch', async (req, res) => {
   const { username } = req.body;
 
-  console.log(username);
   const getAllDiseasesInfoSql = `
     SELECT name, symptomsOccurrence, geneticEffects
     FROM diseases;
@@ -433,9 +433,7 @@ app.post('/calculatepercentagematch', async (req, res) => {
     `;
 
     const ageResult = await db.query(getUserAgeSql, [username]);
-    console.log(ageResult);
     const userAge = ageResult[0][0].age;
-    console.log(userAge);
     const ageGroup = categorizeAge(userAge);
 
     const getUserSexSql = `
@@ -447,15 +445,6 @@ app.post('/calculatepercentagematch', async (req, res) => {
     const sexResult = await db.query(getUserSexSql, [username]);
     const userSex = sexResult[0][0].sex;
 
-    const getUserFamilyHistorySql = `
-      SELECT disease, generation
-      FROM familyhistory
-      WHERE username = ?;
-    `;
-
-    const familyHistoryResults = await db.query(getUserFamilyHistorySql, [username]);
-    const familyHistoryProbability = calculateFamilyHistoryProbability(familyHistoryResults);
-
     const getUserSymptomsSql = `
       SELECT symptom
       FROM symptoms
@@ -464,7 +453,7 @@ app.post('/calculatepercentagematch', async (req, res) => {
 
     const userSymptomsResults = await db.query(getUserSymptomsSql, [username]);
 
-    const percentMatchResults = await calculateFinalPercentMatch(username, diseasesInfo, ageGroup, userSex, familyHistoryProbability, userSymptomsResults);
+    const percentMatchResults = await calculateFinalPercentMatch(username, diseasesInfo, ageGroup, userSex, userSymptomsResults);
 
     console.log(percentMatchResults);
     res.json({ diseaseMatchResults: percentMatchResults });
@@ -474,78 +463,85 @@ app.post('/calculatepercentagematch', async (req, res) => {
   }
 });
 
-async function calculateFinalPercentMatch(username, diseasesInfo, ageGroup, userSex, familyHistoryProbability, userSymptomsResults) {
+async function calculateFinalPercentMatch(username, diseasesInfo, ageGroup, userSex, userSymptomsResults) {
   const percentMatchResults = {};
   const totalMatches = {};
 
-  await Promise.all(diseasesInfo[0].map(async (diseaseRow) => {
-    const diseaseName = diseaseRow.name;
-    percentMatchResults[diseaseName] = 0.5;
-    totalMatches[diseaseName] = 0;
+  try {
+    await Promise.all(diseasesInfo[0].map(async (diseaseRow) => {
+      const diseaseName = diseaseRow.name;
+      percentMatchResults[diseaseName] = 0.5;
 
-    if (diseaseRow.symptomsOccurrence.includes(ageGroup) || diseaseRow.symptomsOccurrence.includes('variety of ages') || diseaseRow.symptomsOccurrence.includes('any time in life')) {
-      percentMatchResults[diseaseName] += 0.1;
-      console.log(diseaseRow.symptomsOccurrence);
-    }
-    totalMatches[diseaseName]+=0.1
+      // Initialize totalMatches with the base percentage
+      totalMatches[diseaseName] = 0.5;
 
-    const geneticEffects = diseaseRow.geneticEffects;
-    if (geneticEffects === 'X-Linked Recessive' && userSex === 'F') {
-      console.log(geneticEffects, diseaseName);
-      const isInFamilyHistory = await familyHistoryProbability[diseaseName];
-      console.log(isInFamilyHistory);
-      if (isInFamilyHistory) {
-        percentMatchResults[diseaseName] += isInFamilyHistory;
+      if (diseaseRow.symptomsOccurrence.includes(ageGroup) || diseaseRow.symptomsOccurrence.includes('variety of ages') || diseaseRow.symptomsOccurrence.includes('any time in life')) {
+        percentMatchResults[diseaseName] += 0.1;
+        
       }
-      totalMatches[diseaseName]+=0.99
-    } else if (geneticEffects !== 'X-Linked Recessive') {
-      const isInFamilyHistory = await familyHistoryProbability[diseaseName];
-      console.log('yeee', diseaseName);
-      if (isInFamilyHistory) {
-        percentMatchResults[diseaseName] += isInFamilyHistory;
+      totalMatches[diseaseName] += 0.1;
+
+      const geneticEffects = diseaseRow.geneticEffects;
+      if (
+        (geneticEffects === 'X-Linked Recessive' && userSex === 'F') ||
+        geneticEffects === 'Autosomal Recessive' ||
+        geneticEffects === 'Autosomal Dominant'
+      ) {
+        const isInFamilyHistory = await calculateFamilyHistoryProbability(username, diseaseName);
+        console.log(`isInFamilyHistory for ${diseaseName}: ${isInFamilyHistory}`);
+        if (isInFamilyHistory) {
+          percentMatchResults[diseaseName] += isInFamilyHistory * 15;
+           
+        }
+        totalMatches[diseaseName] += 7.25;
       }
-      totalMatches[diseaseName]+=0.99
-    }
-    
 
-    const symptomsProbability = await calculateSymptomsProbability(username, userSymptomsResults, diseaseRow);
-    console.log(symptomsProbability);
+      const symptomsProbability = await calculateSymptomsProbability(username, userSymptomsResults, diseaseRow);
+      console.log(`Symptoms probability for ${diseaseName}: ${symptomsProbability[diseaseName]}`);
+      if (symptomsProbability[diseaseName]) {
+        percentMatchResults[diseaseName] += symptomsProbability[diseaseName];
+        
+      }
+      totalMatches[diseaseName] += await getTotalSymptomsCountForDisease(diseaseName);
+    }));
+  } catch (error) {
+    console.error(error);
+  }
 
-    if (symptomsProbability[diseaseName]) {
-      percentMatchResults[diseaseName] += symptomsProbability[diseaseName];
-    }
-
-
-    const getDiseaseSymptomsSql = `
-      SELECT symptom
-      FROM disease_symptom_xref
-      WHERE disease = ?;
-    `;
-    const [diseaseSymptoms] = await db.query(getDiseaseSymptomsSql, [diseaseName]);
-    diseaseSymptoms.forEach(symptomRow => {
-      totalMatches[diseaseName] += 0.2;
-
-      console.log(`Disease: ${diseaseName}, Symptom: ${symptomRow.symptom}`);
-    });
-    
-  }));
-
+  console.log('Intermediate Results:', percentMatchResults, totalMatches);
   const percentageResults = {};
   Object.keys(percentMatchResults).forEach((diseaseName) => {
-    const percentMatch = percentMatchResults[diseaseName];
     const totalMatch = totalMatches[diseaseName];
-    const percentage = totalMatch > 0 ? (percentMatch / totalMatch) * 100 : 0;
-    percentageResults[diseaseName] = percentage; // Round to 2 decimal places if needed
+    const percentage = (percentMatchResults[diseaseName] / totalMatch) * 100;
+    percentageResults[diseaseName] = isNaN(percentage) ? 0 : percentage;
   });
+
+  console.log('Final Percentage Results:', percentageResults);
 
   return percentageResults;
 }
 
+
+
+
+async function getTotalSymptomsCountForDisease(diseaseName) {
+  const getDSXref = `
+    SELECT COUNT(*) AS totalSymptoms
+    FROM disease_symptom_xref
+    WHERE disease = ?;
+  `;
+
+  const [result] = await db.query(getDSXref, [diseaseName]);
+  return result[0].totalSymptoms;
+}
+
+
 async function calculateSymptomsProbability(username, userSymptomsResults, diseaseRow) {
   const symptomsProbability = {};
+  if (userSymptomsResults && userSymptomsResults[0]) {
   const userSymptoms = userSymptomsResults[0].map(row => row.symptom);
-
   for (const userSymptom of userSymptoms) {
+
     const diseaseName = diseaseRow.name;
 
     if (!symptomsProbability[diseaseName]) {
@@ -563,9 +559,12 @@ async function calculateSymptomsProbability(username, userSymptomsResults, disea
 
     if (hasSymptom) {
       symptomsProbability[diseaseName] += 0.2;
-      console.log('yes');
     }
+
   }
+}
+
+
 
   return symptomsProbability;
 }
@@ -591,29 +590,31 @@ function categorizeAge(age) {
   else return 'Elderly';
 }
 
-async function calculateFamilyHistoryProbability(familyHistoryResults) {
-  console.log(familyHistoryResults);
+async function calculateFamilyHistoryProbability(username, targetDisease) {
+  console.log(String(username), targetDisease);
+  const getUserFamilyHistorySql = `
+    SELECT disease, generation
+    FROM familyhistory
+    WHERE username = ? AND disease = ?;
+  `;
 
-  if (!familyHistoryResults || familyHistoryResults.length === 0) {
-    return {}; 
+  try {
+    const [results] = await db.query(getUserFamilyHistorySql, [username, targetDisease]);
+    console.log(results);
+    let familyHistoryProbability = 0;
+
+    (results).forEach((row) => {
+      familyHistoryProbability += Math.pow(0.5, row['generation']);
+
+    });
+    console.log(familyHistoryProbability);
+    return familyHistoryProbability;
+  } catch (error) {
+    console.error(error);
+    return 0;
   }
-
-  const familyHistoryProbability = {};
-  familyHistoryResults[0].forEach((historyRow) => {
-    const diseaseName = historyRow.disease;
-
-    if (!familyHistoryProbability[diseaseName]) {
-      familyHistoryProbability[diseaseName] = 0;
-    }
-
-    const generation = historyRow.generation;
-    let probability = Math.pow(0.5, generation);
-
-    familyHistoryProbability[diseaseName] += probability;
-  });
-
-  return familyHistoryProbability;
 }
+
 
 
 
@@ -695,12 +696,12 @@ app.post('/getusersymptoms', async (req, res) => {
   try {
     const { username } = req.body;
     const getUserSymptomsSql = `
-      SELECT symptom, date
+      SELECT *
       FROM symptoms
       WHERE username = ?;
     `;
     const results = await db.query(getUserSymptomsSql, [username]);
-    const userSymptoms = results.map(row => ({ symptom: row.symptom, date: row.date }));
+    const userSymptoms = results[0].map(row => ({ symptom: row.symptom, date: row.date }));
     res.json({ user: userSymptoms });
   } catch (error) {
     console.error(error);
@@ -717,7 +718,7 @@ app.post("/getsymptoms", async (req, res) => {
     `;
     const results = await db.query(get_symptoms_sql);
     if (results.length > 0) {
-      res.json({ user: results });
+      res.json({ user: results[0] });
     } else {
       res.status(404).json({ message: 'User not found' });
     }

@@ -4,7 +4,7 @@ import { Link } from 'react-router-dom';
 import { FaUser, FaHome, FaInfoCircle, FaHistory, FaNotesMedical, FaChartLine, FaList, FaQuestion } from 'react-icons/fa';
 
 const SidebarButton = ({ to, icon, text }) => (
-  <Link to={to} className="flex items-center mb-4 text-black-resonate hover:text-white">
+  <Link to={to} className="flex items-center mb-4 text-black-resonate hover:text-beige-resonate">
     <span className="mr-2">{icon}</span>
     <span>{text}</span>
   </Link>

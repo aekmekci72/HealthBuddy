@@ -5,7 +5,7 @@ import { Link } from 'react-router-dom';
 import { FaUser, FaHome, FaInfoCircle, FaHistory, FaNotesMedical, FaChartLine, FaList, FaQuestion } from 'react-icons/fa';
 
 const SidebarButton = ({ to, icon, text }) => (
-  <Link to={to} className="flex items-center mb-4 text-black-resonate hover:text-white">
+  <Link to={to} className="flex items-center mb-4 text-black-resonate hover:text-beige-resonate">
     <span className="mr-2">{icon}</span>
     <span>{text}</span>
   </Link>
@@ -65,8 +65,8 @@ const Homepage = () => {
           <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed ullamcorper risus a nisl sollicitudin, vel dapibus sem eleifend. Nullam ut lacus quam. Vivamus euismod, velit at lacinia commodo, tortor nulla vulputate justo, eget gravida dui odio vitae est.</p>
           {}
         </div>
-        <div className="mt-5">
-          <button onClick={handleLogout} className="bg-red-500 text-white px-4 py-2 rounded">
+        <div className="flex items-center justify-center mt-5">
+          <button onClick={handleLogout} className="bg-beige-resonate text-white px-4 py-2 rounded">
             Logout
           </button>
         </div>

@@ -7,7 +7,7 @@ import { FaUser, FaHome, FaInfoCircle, FaHistory, FaNotesMedical, FaChartLine, F
 import { Link } from 'react-router-dom';
 
 const SidebarButton = ({ to, icon, text }) => (
-  <Link to={to} className="flex items-center mb-4 text-black-resonate hover:text-white">
+  <Link to={to} className="flex items-center mb-4 text-black-resonate hover:text-beige-resonate">
     <span className="mr-2">{icon}</span>
     <span>{text}</span>
   </Link>
@@ -81,7 +81,6 @@ const Profile = () => {
         <SidebarButton to="/profile" icon={<FaUser />} text="Profile" />
         <SidebarButton to="/userinformation" icon={<FaInfoCircle />} text="General Info" />
         <SidebarButton to="/familyhistory" icon={<FaHistory />} text="Family History" />
-        <SidebarButton to="/medicalhistory" icon={<FaNotesMedical />} text="Medical History" />
         <SidebarButton to="/symptomtracker" icon={<FaChartLine />} text="Symptom Tracker" />
         <SidebarButton to="/results" icon={<FaList />} text="Results" />
         <SidebarButton to="/about" icon={<FaQuestion />} text="About" />
