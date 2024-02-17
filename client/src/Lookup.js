@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { Link } from 'react-router-dom';
 import { FaUser, FaSearch, FaHome, FaInfoCircle, FaHistory, FaChartLine, FaList, FaQuestion } from 'react-icons/fa';
-import Modal from 'react-modal';
+import Modal from './Modal'; 
 
 const SidebarButton = ({ to, icon, text }) => (
   <Link to={to} className="flex items-center mb-4 text-black-resonate hover:text-beige-resonate">
@@ -13,28 +13,22 @@ const SidebarButton = ({ to, icon, text }) => (
 
 const Results = () => {
   // State for disease matches
-  const [diseaseMatches, setDiseaseMatches] = useState([]);
-  const [selectedDisease, setSelectedDisease] = useState(null);  // State to track the selected disease
-  const [modalIsOpen, setModalIsOpen] = useState(false);  // State to control the modal visibility
-  const [symptoms, setSymptoms] = useState([]);
+  const [diseaseInfo, setDiseaseInfo] = useState([]);
+  const [searchQuery, setSearchQuery] = useState('');
+
+  
+  const [selectedDisease, setSelectedDisease] = useState(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
 
   // Fetch disease data on component mount
   useEffect(() => {
-    const storedUsername = localStorage.getItem('username');
-
     axios
-      .post('http://localhost:5000/calculatepercentagematch', {
-        username: storedUsername,
-      })
+      .get('http://localhost:5000/getdiseaseinfo')
       .then((response) => {
-        const diseaseMatchResults = response.data.diseaseMatchResults;
-
-        if (diseaseMatchResults && typeof diseaseMatchResults === 'object') {
-          const sortedDiseaseMatches = Object.entries(diseaseMatchResults)
-            .map(([disease, percent]) => ({ disease, percent }))
-            .sort((a, b) => b.percent - a.percent)
-            .slice(0, 5);
-          setDiseaseMatches(sortedDiseaseMatches);
+        const diseaseInfo = response.data.user;
+        if (diseaseInfo && typeof diseaseInfo === 'object') {
+          setDiseaseInfo(diseaseInfo);
         } else {
           console.error('Invalid disease match data format in the response');
         }
@@ -43,6 +37,17 @@ const Results = () => {
         console.error('Error fetching disease match data:', error);
       });
   }, []);
+
+  const openModal = (diseaseName) => {
+    setSelectedDisease(diseaseName);
+    setIsModalOpen(true);
+  };
+
+  const closeModal = () => {
+    setIsModalOpen(false);
+    setSelectedDisease(null);
+  };
+
 
   return (
     <div className="flex">
@@ -64,26 +69,42 @@ const Results = () => {
       </div>
       <div className="bg-white-resonate min-h-screen w-5/6 p-10 flex flex-col items-center ">
         <div className="flex items-center justify-center mt-5">
-          <h1 className="text-9xl text-grey-resonate">Results</h1>
+          <h1 className="text-9xl text-grey-resonate">Lookup</h1>
         </div>
 
-        {/* Disease List */}
-        <ul>
-          {diseaseMatches.map((diseaseMatch, index) => (
-            <li key={index} className="mb-2">
-              <div className="flex justify-between mb-1">
-                <span className="text-base font-medium text-blue-700 dark:text-black">{`${diseaseMatch.disease}`}</span>
-                <span className="text-sm font-medium text-blue-700 dark:text-black">{`${diseaseMatch.percent.toFixed(2)}%`}</span>
-              </div>
-              <div className="w-full h-4 mb-4 bg-gray-300 rounded-full dark:bg-light-gray-700">
-                <div className="bg-green-600 h-4 rounded-full" style={{ width: `${diseaseMatch.percent}%` }} ></div>
-              </div>
-            </li>
-          ))}
-        </ul>
+        <input
+          type="text"
+          placeholder="Search for diseases..."
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          className="my-4 p-2 border rounded-md"
+        />
+
+
+          <ul>
+            {diseaseInfo
+              .filter((disease) => disease.name.toLowerCase().includes(searchQuery.toLowerCase()))
+              .map((disease, index) => (
+                <li key={index} className="mb-2">
+                  <div className="flex justify-between mb-1">
+                    <span className="text-base font-medium text-blue-700 dark:text-black">{`${disease.name}`}</span>
+                    <button onClick={() => openModal(disease.name)}             className="bg-beige-resonate text-white px-2 py-1 rounded hover:bg-[#C2899E] transition-colors">Details</button>
+
+                  </div>
+                </li>
+              ))}
+          </ul>
 
       </div>
+      <Modal
+        isOpen={isModalOpen}
+        closeModal={closeModal}
+        diseaseName={selectedDisease}
+      />
+    
+
     </div>
+    
   );
 };
 

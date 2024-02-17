@@ -3,7 +3,7 @@ import axios from 'axios';
 import DatePicker from 'react-datepicker'; // You will need to install this library
 import "react-datepicker/dist/react-datepicker.css";
 import { Link } from 'react-router-dom';
-import { FaUser, FaHome, FaInfoCircle, FaHistory, FaNotesMedical, FaChartLine, FaList, FaQuestion } from 'react-icons/fa';
+import { FaUser, FaSearch, FaHome, FaInfoCircle, FaHistory, FaNotesMedical, FaChartLine, FaList, FaQuestion } from 'react-icons/fa';
 
 const SidebarButton = ({ to, icon, text }) => (
   <Link to={to} className="flex items-center mb-4 text-black-resonate hover:text-beige-resonate">
@@ -121,6 +121,8 @@ const SymptomTracker = () => {
         <SidebarButton to="/familyhistory" icon={<FaHistory />} text="Family History" />
         <SidebarButton to="/symptomtracker" icon={<FaChartLine />} text="Symptom Tracker" />
         <SidebarButton to="/results" icon={<FaList />} text="Results" />
+        <SidebarButton to="/lookup" icon={<FaSearch />} text="Lookup" />
+
         <SidebarButton to="/about" icon={<FaQuestion />} text="About" />
       </div>
       <div className="bg-white-resonate min-h-screen w-5/6 p-10 flex flex-col items-center ">
@@ -146,15 +148,24 @@ const SymptomTracker = () => {
           onChange={date => setSelectedDate(date)}
           placeholderText="Select a Date"
         />
-        <button onClick={handleAddSymptom}>Add</button>
-      </div>
+<button
+            onClick={handleAddSymptom}
+            className="bg-beige-resonate text-white px-2 py-1 rounded hover:bg-[#C2899E] transition-colors"
+          >
+            Add
+          </button>      </div>
       <div>
         <h2>Your Symptom History</h2>
         <ul>
         {userSymptoms.map((symptomItem, index) => (
           <li key={index}>
             {`${symptomItem.symptom} - Tracked on ${new Date(symptomItem.date).toLocaleDateString()}`}
-            <button onClick={() => handleDeleteSymptom(symptomItem)}>Delete</button>
+            <button
+            onClick={() => handleDeleteSymptom(symptomItem)}
+            className="bg-beige-resonate text-white px-2 py-1 rounded hover:bg-[#C2899E] transition-colors"
+          >
+            Delete
+          </button>
           </li>
         ))}
 

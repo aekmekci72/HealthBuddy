@@ -16,7 +16,7 @@ const Homepage = () => {
         </div>
         <div className="mt-5 text-black-resonate">
           <p>
-            Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed ullamcorper risus a nisl sollicitudin, vel dapibus sem eleifend. Nullam ut lacus quam. Vivamus euismod, velit at lacinia commodo, tortor nulla vulputate justo, eget gravida dui odio vitae est.
+          Welcome to Health Buddy, your personalized proactive health monitoring companion! In a world filled with uncertainties surrounding the development of orphan diseases, it can be daunting to navigate the complexities of understanding your own susceptibility. Health buddy is here to empower you by tracking and interpreting various risk factors in your life to calculate the likelihood of developing these diseases in your future.
           </p>
           {/* Login and Signup Buttons */}
           <div className="flex justify-center mt-4">

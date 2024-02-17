@@ -143,6 +143,64 @@ app.post("/getdiseases", async (req, res) => {
   }
 });
 
+
+app.post('/getspecificdiseaseinfo', async (req, res) => {
+  const { name } = req.body;
+
+  if (!name) {
+    return res.status(400).json({ message: 'Disease name is required.' });
+  }
+
+  const get_specific_disease_sql = `
+    SELECT d.geneticEffects, d.symptomsOccurrence, dx.symptom, dx.frequency
+    FROM diseases d
+    LEFT JOIN disease_symptom_xref dx ON d.name = dx.disease
+    WHERE d.name = ?
+  `;
+
+  try {
+    const [results] = await db.query(get_specific_disease_sql, [name]);
+
+    if (results.length > 0) {
+      const { geneticEffects, symptomsOccurrence } = results[0];
+      const symptoms = results.map((result) => `${result.symptom}: ${result.frequency}`).filter(Boolean); // Filter out null values
+
+      res.json({
+        name,
+        geneticEffects,
+        symptomsOccurrence,
+        symptoms,
+      });
+    } else {
+      res.status(404).json({ message: 'Disease not found' });
+    }
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'An error occurred while processing your request' });
+  }
+});
+
+
+
+app.get("/getdiseaseinfo", async (req, res) => {
+  const get_diseases_sql = `
+    SELECT *
+    FROM diseases
+  `;
+
+  try {
+    const [results] = await db.query(get_diseases_sql);
+    if (results.length > 0) {
+      res.json({ user: results });
+    } else {
+      res.status(404).json({ message: 'User not found' });
+    }
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'An error occurred while processing your request' });
+  }
+});
+
 app.post("/getyears", async (req, res) => {
   const get_years_sql = `
     SELECT *
@@ -728,6 +786,29 @@ app.post("/getsymptoms", async (req, res) => {
   }
 });
 
+app.post("/getDiseasesSymptoms", async (req, res) => {
+  const { disease } = req.body;
+
+  try {
+    const get_symptoms_sql = `
+      SELECT DISTINCT symptom
+      FROM disease_symptom_xref
+      WHERE disease = ?
+      ORDER BY symptom
+    `;
+    const results = await db.query(get_symptoms_sql, [disease]);
+    if (results.length > 0) {
+      const symptomsArray = results.map(result => result.symptom);
+res.json(symptomsArray);
+
+    } else {
+      res.status(404).json({ message: 'User not found' });
+    }
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'An error occurred while processing your request' });
+  }
+});
 
 app.listen(5000, () => {
   console.log('Server is running on port 5000');

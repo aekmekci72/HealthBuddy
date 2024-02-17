@@ -1,8 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { Link } from 'react-router-dom';
-import { FaUser, FaSearch, FaHome, FaInfoCircle, FaHistory, FaChartLine, FaList, FaQuestion } from 'react-icons/fa';
-import Modal from 'react-modal';
+import { FaUser, FaHome, FaInfoCircle, FaHistory, FaNotesMedical, FaChartLine, FaList, FaQuestion } from 'react-icons/fa';
 
 const SidebarButton = ({ to, icon, text }) => (
   <Link to={to} className="flex items-center mb-4 text-black-resonate hover:text-beige-resonate">
@@ -12,16 +11,10 @@ const SidebarButton = ({ to, icon, text }) => (
 );
 
 const Results = () => {
-  // State for disease matches
   const [diseaseMatches, setDiseaseMatches] = useState([]);
-  const [selectedDisease, setSelectedDisease] = useState(null);  // State to track the selected disease
-  const [modalIsOpen, setModalIsOpen] = useState(false);  // State to control the modal visibility
-  const [symptoms, setSymptoms] = useState([]);
+  const storedUsername = localStorage.getItem('username');
 
-  // Fetch disease data on component mount
   useEffect(() => {
-    const storedUsername = localStorage.getItem('username');
-
     axios
       .post('http://localhost:5000/calculatepercentagematch', {
         username: storedUsername,
@@ -32,8 +25,8 @@ const Results = () => {
         if (diseaseMatchResults && typeof diseaseMatchResults === 'object') {
           const sortedDiseaseMatches = Object.entries(diseaseMatchResults)
             .map(([disease, percent]) => ({ disease, percent }))
-            .sort((a, b) => b.percent - a.percent)
-            .slice(0, 5);
+            .sort((a, b) => b.percent - a.percent) 
+            .slice(0,5);
           setDiseaseMatches(sortedDiseaseMatches);
         } else {
           console.error('Invalid disease match data format in the response');
@@ -42,8 +35,10 @@ const Results = () => {
       .catch((error) => {
         console.error('Error fetching disease match data:', error);
       });
-  }, []);
-
+  }, [storedUsername]);
+  if (!diseaseMatches) {
+    return <div>Loading...</div>;
+  }
   return (
     <div className="flex">
       
@@ -58,8 +53,6 @@ const Results = () => {
         <SidebarButton to="/familyhistory" icon={<FaHistory />} text="Family History" />
         <SidebarButton to="/symptomtracker" icon={<FaChartLine />} text="Symptom Tracker" />
         <SidebarButton to="/results" icon={<FaList />} text="Results" />
-        <SidebarButton to="/lookup" icon={<FaSearch />} text="Lookup" />
-
         <SidebarButton to="/about" icon={<FaQuestion />} text="About" />
       </div>
       <div className="bg-white-resonate min-h-screen w-5/6 p-10 flex flex-col items-center ">
@@ -67,21 +60,25 @@ const Results = () => {
           <h1 className="text-9xl text-grey-resonate">Results</h1>
         </div>
 
-        {/* Disease List */}
-        <ul>
-          {diseaseMatches.map((diseaseMatch, index) => (
-            <li key={index} className="mb-2">
-              <div className="flex justify-between mb-1">
-                <span className="text-base font-medium text-blue-700 dark:text-black">{`${diseaseMatch.disease}`}</span>
-                <span className="text-sm font-medium text-blue-700 dark:text-black">{`${diseaseMatch.percent.toFixed(2)}%`}</span>
-              </div>
-              <div className="w-full h-4 mb-4 bg-gray-300 rounded-full dark:bg-light-gray-700">
-                <div className="bg-green-600 h-4 rounded-full" style={{ width: `${diseaseMatch.percent}%` }} ></div>
-              </div>
-            </li>
-          ))}
-        </ul>
+        <div className="bg-white-resonate min-h-screen flex flex-col items-center relative">
+          <div className="flex items-center relative mt-0"></div>
 
+          <ul>
+            {diseaseMatches.map((diseaseMatch, index) => (
+              <li key={index} className="mb-2">
+                <div class="flex justify-between mb-1">
+                  <span class="text-base font-medium text-blue-700 dark:text-black">{`${diseaseMatch.disease}`}</span>
+                  <span class="text-sm font-medium text-blue-700 dark:text-black">{`${diseaseMatch.percent.toFixed(2)}`}%</span>
+                </div>
+                <div class="w-full h-4 mb-4 bg-gray-300 rounded-full dark:bg-light-gray-700">
+                  <div class="bg-green-600 h-4 rounded-full" style={{ width: `${diseaseMatch.percent}%` }} ></div>
+                </div>
+
+
+              </li>
+            ))}
+          </ul>
+        </div>
       </div>
     </div>
   );

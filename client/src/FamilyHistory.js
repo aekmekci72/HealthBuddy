@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { Link } from 'react-router-dom';
-import { FaUser, FaHome, FaInfoCircle, FaHistory, FaNotesMedical, FaChartLine, FaList, FaQuestion } from 'react-icons/fa';
+import { FaUser, FaHome, FaSearch,  FaInfoCircle, FaHistory, FaNotesMedical, FaChartLine, FaList, FaQuestion } from 'react-icons/fa';
 
 const SidebarButton = ({ to, icon, text }) => (
   <Link to={to} className="flex items-center mb-4 text-black-resonate hover:text-beige-resonate">
@@ -114,6 +114,8 @@ const handleDeleteFamilyHistory = (familyHistoryItem) => {
         <SidebarButton to="/familyhistory" icon={<FaHistory />} text="Family History" />
         <SidebarButton to="/symptomtracker" icon={<FaChartLine />} text="Symptom Tracker" />
         <SidebarButton to="/results" icon={<FaList />} text="Results" />
+        <SidebarButton to="/lookup" icon={<FaSearch />} text="Lookup" />
+
         <SidebarButton to="/about" icon={<FaQuestion />} text="About" />
       </div>
       <div className="bg-white-resonate min-h-screen w-5/6 p-10">
@@ -142,15 +144,24 @@ const handleDeleteFamilyHistory = (familyHistoryItem) => {
           ))}
         </select>
 
-        <button onClick={handleAddFamilyHistory}>Add</button>
-      </div>
+        <button
+            onClick={handleAddFamilyHistory}
+            className="bg-beige-resonate text-white px-2 py-1 rounded hover:bg-[#C2899E] transition-colors"
+          >
+            Add
+          </button>      </div>
       <div>
         <h2>Your Family History</h2>
         <ul>
           {userFamilyHistory.map((familyHistoryItem, index) => (
             <li key={index}>
               {`${familyHistoryItem.disease} - ${familyHistoryItem.generation}`}
-              <button onClick={() => handleDeleteFamilyHistory(familyHistoryItem)}>Delete</button>
+              <button
+            onClick={() => handleDeleteFamilyHistory(familyHistoryItem)}
+            className="bg-beige-resonate text-white px-2 py-1 rounded hover:bg-[#C2899E] transition-colors"
+          >
+            Delete
+          </button>
             </li>
           ))}
         </ul>

@@ -3,7 +3,7 @@ import axios from 'axios';
 // import bg_profile2 from './assets/bg_profile2.png';
 // import profileheading from './assets/profileheading.png';
 import profilePictures from './profilePictures/profilePictures'; // Import the profilePictures object
-import { FaUser, FaHome, FaInfoCircle, FaHistory, FaNotesMedical, FaChartLine, FaList, FaQuestion } from 'react-icons/fa';
+import { FaUser, FaSearch, FaHome, FaInfoCircle, FaHistory, FaNotesMedical, FaChartLine, FaList, FaQuestion } from 'react-icons/fa';
 import { Link } from 'react-router-dom';
 
 const SidebarButton = ({ to, icon, text }) => (
@@ -12,15 +12,13 @@ const SidebarButton = ({ to, icon, text }) => (
     <span>{text}</span>
   </Link>
 );
-
-const UserInformation = () => {
+const Profile = () => {
   const [userProfile, setUserProfile] = useState(null);
   const [editingField, setEditingField] = useState(null);
   const [newValue, setNewValue] = useState('');
   const [showModal, setShowModal] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [file, setFile] = useState(null);
-  const storedUsername = localStorage.getItem('username');
 
   useEffect(() => {
     // Get the username from localStorage
@@ -47,11 +45,10 @@ const UserInformation = () => {
     if (!newValue) {
       return;
     }
-    const storedUsername = localStorage.getItem('username');
 
     const endpoint = `/edit${editingField}`;
     const data = {
-      username: storedUsername,
+      username: userProfile.username,
       newValue
     };
 
@@ -86,28 +83,28 @@ const UserInformation = () => {
         <SidebarButton to="/familyhistory" icon={<FaHistory />} text="Family History" />
         <SidebarButton to="/symptomtracker" icon={<FaChartLine />} text="Symptom Tracker" />
         <SidebarButton to="/results" icon={<FaList />} text="Results" />
+        <SidebarButton to="/lookup" icon={<FaSearch />} text="Lookup" />
+
         <SidebarButton to="/about" icon={<FaQuestion />} text="About" />
       </div>
+      <div className="bg-white-resonate min-h-screen w-5/6 p-10">
 
     
-      <div className="bg-white-resonate min-h-screen w-5/6 p-10">
-        <div className="bg-white-resonate min-h-screen flex flex-col items-center relative">
-    <div className="flex items-center justify-center mt-5">
+    <div className="bg-white-resonate min-h-screen flex flex-col items-center relative">
+      <div className="flex items-center justify-center mt-5">
           <h1 className=" text-9xl text-grey-resonate">General</h1>
         </div>
-        <div className="flex items-center justify-center mt-0">
-          <h1 className=" text-9xl text-grey-resonate ">Information</h1>
-        </div>
-      <div className="flex items-center flex-col mt-[10%]">
+      
+      <div className="flex items-center flex-col mt-[17%]">
       <div>
           
-          <div classname="mt-[0%]">
+          <div classname="mt-[-15%]">
             {}
             {}
         
             
             {userProfile && (
-  <div className='mt-[-100%]'>
+  <div className='mt-[-75%] flex flex-col items-center'>
     {/* Display user information */}
     {Object.keys(userProfile).map((field) => {
       // Define a mapping for specific fields
@@ -118,13 +115,12 @@ const UserInformation = () => {
       };
 
       const displayField = fieldMappings[field] || field; // Use the mapped value or the field itself
-
+      
       return (
         <div
           key={field}
-          className="flex items-center space-x-1 overflow-x-hidden justify-center"
+          className="flex items-center space-x-4 mt-2 overflow-x-hidden justify-center"
           style={{ overflowWrap: 'break-word' }}
-          
         >
           {isEditing && editingField === field ? (
             <>
@@ -134,10 +130,12 @@ const UserInformation = () => {
                 onChange={(e) => setNewValue(e.target.value)}
               />
               <button
-                onClick={handleSubmitEdit}
-              >
-                Submit
-              </button>
+            onClick={handleSubmitEdit}
+            className="bg-beige-resonate text-white px-2 py-1 rounded hover:bg-[#C2899E] transition-colors"
+          >
+            Submit
+          </button>
+
             </>
           ) : (
             <>
@@ -147,11 +145,11 @@ const UserInformation = () => {
               >
                 {displayField.charAt(0).toUpperCase() + displayField.slice(1)}: {userProfile[field]}{' '}
                 <button
-                  onClick={() => handleEdit(field)}
-                  className="text-[#679B89] hover:text-[#C2899E] transition-colors"
-                >
-                  Edit
-                </button>
+              onClick={() => handleEdit(field)}
+              className="bg-beige-resonate text-white px-2 py-1 rounded hover:bg-[#C2899E] transition-colors"
+            >
+              Edit
+            </button>
               </label>
             </>
           )}
@@ -172,4 +170,4 @@ const UserInformation = () => {
   );
 };
 
-export default UserInformation;
+export default Profile;

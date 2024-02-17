@@ -4,6 +4,7 @@ import ReactDOM from 'react-dom';
 import './index.css';
 import reportWebVitals from './reportWebVitals';
 import WelcomePage from './WelcomePage';
+import MatchResults from './MatchResults';
 import Signup from './SignupPage';
 import Login from './LoginPage';
 import HomePage from './HomePage';
@@ -14,6 +15,7 @@ import MedicalHistory from './MedicalHistory';
 import SymptomTracker from './SymptomTracker';
 import Results from './Results';
 import About from './About';
+import Lookup from './Lookup';
 
 
 
@@ -33,7 +35,9 @@ ReactDOM.render(
         <Route path="/symptomtracker" element={<SymptomTracker />} />
         <Route path="/results" element={<Results />} />
         <Route path="/about" element={<About />} />
-
+        <Route path="/lookup" element={<Lookup />} />
+        <Route path="/matchresults" element={<MatchResults />} />
+        
       </Routes>
     </Router>
   </React.StrictMode>,

@@ -2,7 +2,7 @@ import leaf_design from './assets/leafdesign.png';
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { Link } from 'react-router-dom';
-import { FaUser, FaHome, FaInfoCircle, FaHistory, FaNotesMedical, FaChartLine, FaList, FaQuestion } from 'react-icons/fa';
+import { FaUser, FaHome, FaSearch, FaInfoCircle, FaHistory, FaNotesMedical, FaChartLine, FaList, FaQuestion } from 'react-icons/fa';
 
 const SidebarButton = ({ to, icon, text }) => (
   <Link to={to} className="flex items-center mb-4 text-black-resonate hover:text-beige-resonate">
@@ -47,9 +47,10 @@ const Homepage = () => {
         <SidebarButton to="/profile" icon={<FaUser />} text="Profile" />
         <SidebarButton to="/userinformation" icon={<FaInfoCircle />} text="General Info" />
         <SidebarButton to="/familyhistory" icon={<FaHistory />} text="Family History" />
-        <SidebarButton to="/medicalhistory" icon={<FaNotesMedical />} text="Medical History" />
         <SidebarButton to="/symptomtracker" icon={<FaChartLine />} text="Symptom Tracker" />
         <SidebarButton to="/results" icon={<FaList />} text="Results" />
+        <SidebarButton to="/lookup" icon={<FaSearch />} text="Lookup" />
+
         <SidebarButton to="/about" icon={<FaQuestion />} text="About" />
       </div>
 
@@ -62,7 +63,9 @@ const Homepage = () => {
           <h1 className=" text-9xl text-grey-resonate mx-[-25px]">{userProfile.name_first}</h1>
         </div>
         <div className="mt-5 text-black-resonate">
-          <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed ullamcorper risus a nisl sollicitudin, vel dapibus sem eleifend. Nullam ut lacus quam. Vivamus euismod, velit at lacinia commodo, tortor nulla vulputate justo, eget gravida dui odio vitae est.</p>
+          <p>Welcome to Health Buddy, your personalized proactive health monitoring companion! In a world filled with uncertainties surrounding the development of orphan diseases, it can be daunting to navigate the complexities of understanding your own susceptibility. Health buddy is here to empower you by tracking and interpreting various risk factors in your life to calculate the likelihood of developing these diseases in your future.</p>
+          <br></br>
+          <p>To get started input some information on various aspects of your health life, by navigating to pages that can be located on the nav bar.</p>
           {}
         </div>
         <div className="flex items-center justify-center mt-5">
