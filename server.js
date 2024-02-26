@@ -649,7 +649,7 @@ function categorizeAge(age) {
 }
 
 async function calculateFamilyHistoryProbability(username, targetDisease) {
-  console.log(String(username), targetDisease);
+  // console.log(String(username), targetDisease);
   const getUserFamilyHistorySql = `
     SELECT disease, generation
     FROM familyhistory

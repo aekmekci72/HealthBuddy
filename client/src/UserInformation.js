@@ -95,16 +95,13 @@ const Profile = () => {
           <h1 className=" text-9xl text-grey-resonate">General</h1>
         </div>
       
-      <div className="flex items-center flex-col mt-[17%]">
-      <div>
-          
-          <div classname="mt-[-15%]">
+      <div className="flex items-center flex-col mt-[5%]">
             {}
             {}
         
             
             {userProfile && (
-  <div className='mt-[-75%] flex flex-col items-center'>
+  <div className='mt-[-17%] flex flex-col items-center'>
     {/* Display user information */}
     {Object.keys(userProfile).map((field) => {
       // Define a mapping for specific fields
@@ -161,8 +158,6 @@ const Profile = () => {
 
 
 
-          </div>
-          </div>
           </div>
           </div>
           </div>

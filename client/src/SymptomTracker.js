@@ -155,7 +155,8 @@ const SymptomTracker = () => {
             Add
           </button>      </div>
       <div>
-        <h2>Your Symptom History</h2>
+        <br></br>
+        <h1 style={{ fontWeight: 'bold', fontSize: '1.5em' }}>Your Symptom History</h1>
         <ul>
         {userSymptoms.map((symptomItem, index) => (
           <li key={index}>

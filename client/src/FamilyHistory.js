@@ -151,7 +151,8 @@ const handleDeleteFamilyHistory = (familyHistoryItem) => {
             Add
           </button>      </div>
       <div>
-        <h2>Your Family History</h2>
+        <br></br>
+        <h1 style={{ fontWeight: 'bold', fontSize: '1.5em' }}>Your Family History</h1>
         <ul>
           {userFamilyHistory.map((familyHistoryItem, index) => (
             <li key={index}>

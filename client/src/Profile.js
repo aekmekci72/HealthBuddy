@@ -86,10 +86,7 @@ const Profile = () => {
         <SidebarButton to="/lookup" icon={<FaSearch />} text="Lookup" />
         <SidebarButton to="/about" icon={<FaQuestion />} text="About" />
       </div>
-      <div className="bg-white-resonate min-h-screen w-5/6 p-10">
-
-    
-    <div className="bg-white-resonate min-h-screen flex flex-col items-center relative">
+      <div className="bg-white-resonate min-h-screen w-5/6 p-10 bg-white-resonate min-h-screen flex flex-col items-center relative">
       <div className="flex items-center justify-center mt-5">
           <h1 className=" text-9xl text-grey-resonate">Profile</h1>
         </div>
@@ -160,7 +157,6 @@ const Profile = () => {
 
 
 
-          </div>
           </div>
           </div>
           </div>

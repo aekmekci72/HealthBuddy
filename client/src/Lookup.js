@@ -70,8 +70,9 @@ const Results = () => {
       <div className="bg-white-resonate min-h-screen w-5/6 p-10 flex flex-col items-center ">
         <div className="flex items-center justify-center mt-5">
           <h1 className="text-9xl text-grey-resonate">Lookup</h1>
+          
         </div>
-
+    <br></br>
         <input
           type="text"
           placeholder="Search for diseases..."
