@@ -152,7 +152,7 @@ app.post('/getspecificdiseaseinfo', async (req, res) => {
   }
 
   const get_specific_disease_sql = `
-    SELECT d.geneticEffects, d.symptomsOccurrence, dx.symptom, dx.frequency
+    SELECT d.geneticEffects, d.symptomsOccurrence, dx.symptom, dx.frequency, d.desc
     FROM diseases d
     LEFT JOIN disease_symptom_xref dx ON d.name = dx.disease
     WHERE d.name = ?
@@ -162,7 +162,7 @@ app.post('/getspecificdiseaseinfo', async (req, res) => {
     const [results] = await db.query(get_specific_disease_sql, [name]);
 
     if (results.length > 0) {
-      const { geneticEffects, symptomsOccurrence } = results[0];
+      const { geneticEffects, symptomsOccurrence, desc } = results[0];
       const symptoms = results.map((result) => `${result.symptom}: ${result.frequency}`).filter(Boolean); // Filter out null values
 
       res.json({
@@ -170,6 +170,7 @@ app.post('/getspecificdiseaseinfo', async (req, res) => {
         geneticEffects,
         symptomsOccurrence,
         symptoms,
+        desc,
       });
     } else {
       res.status(404).json({ message: 'Disease not found' });
@@ -531,7 +532,7 @@ async function calculateFinalPercentMatch(username, diseasesInfo, ageGroup, user
       percentMatchResults[diseaseName] = 0.5;
 
       // Initialize totalMatches with the base percentage
-      totalMatches[diseaseName] = 0.5;
+      totalMatches[diseaseName] = 1;
 
       if (diseaseRow.symptomsOccurrence.includes(ageGroup) || diseaseRow.symptomsOccurrence.includes('variety of ages') || diseaseRow.symptomsOccurrence.includes('any time in life')) {
         percentMatchResults[diseaseName] += 0.1;
@@ -616,7 +617,7 @@ async function calculateSymptomsProbability(username, userSymptomsResults, disea
     const hasSymptom = disease_symptom_xref.some(row => row.disease === diseaseName && row.symptom === userSymptom);
 
     if (hasSymptom) {
-      symptomsProbability[diseaseName] += 0.2;
+      symptomsProbability[diseaseName] += 1;
     }
 
   }

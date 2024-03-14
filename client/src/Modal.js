@@ -42,6 +42,9 @@ const DiseaseModal = ({ isOpen, closeModal, diseaseName }) => {
       <h1 style={{ fontWeight: 'bold', fontSize: '1.5em' }}>{diseaseName}</h1>
       {diseaseDetails && (
         <div>
+          <p>{diseaseDetails.desc}</p>
+          <h3 style={{ fontSize: '1.4em' }}>More Information:</h3>
+
           <p>
             {diseaseDetails.geneticEffects === 'None'
               ? 'This condition is not passed down genetically.'
