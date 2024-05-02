@@ -20,7 +20,6 @@ const SymptomTracker = () => {
   const [userSymptoms, setUserSymptoms] = useState([]);
   const [startDate, setStartDate] = useState(new Date());
   useEffect(() => {
-    // Fetch the list of symptoms using the 'getsymptoms' endpoint
     axios.post('http://localhost:5000/getsymptoms')
       .then(response => {
         if (Array.isArray(response.data.user)) {
@@ -37,7 +36,6 @@ const SymptomTracker = () => {
 
   useEffect(() => {
     const storedUsername = localStorage.getItem('username');
-    // Fetch the user's symptoms history using the 'getusersymptoms' endpoint
     axios.post('http://localhost:5000/getusersymptoms', {
       username: storedUsername,
     })
