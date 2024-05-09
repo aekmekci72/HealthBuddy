@@ -38,10 +38,15 @@ Once there are methods for users to be able to input their information, one must
 For database security within the GitHub link provided, the .env file is in the .gitignore file. In order to utilize this code, one needs to provide a database to link to the server. To connect, a .env format is provided below, to be put into the / directory (not client or db):
 
 DB_HOST = 
+
 DB_POST = 
+
 DB_USER = 
+
 DB_PASSWORD = 
+
 DB_DATABASE = 
+
 DB_CONNECT_TIMEOUT = 
 
 The connect timeout is typically 10000, although this can be modified to preference. 
