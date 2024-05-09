@@ -60,3 +60,5 @@ Therefore, scripts should look something like this:
 "client": "npm start --prefix client",
 "dev": "concurrently \"npm run client\" \"npm run server\""
 },
+
+***NOTE: Current and most up-to-date web scraper along with the ML model (and the .env file) that is being utilized for Health Buddy cannot be found in this repository. A stand-in algorithm is utilized here as a proof of concept.
