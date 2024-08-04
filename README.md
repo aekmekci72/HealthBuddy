@@ -52,10 +52,10 @@ DB_CONNECT_TIMEOUT =
 The connect timeout is typically 10000, although this can be modified to preference. 
 Once the .env file is provided, db/db_connection.js will establish the connection. 
 
-## Step 6: Develop prediction algorithm
+### Step 6: Develop prediction algorithm
 Arguably the most important server request is the prediction algorithm (http://localhost:5000/calculatepercentagematch). This analyzes all of the user data and compares it to the scraped data from NORD to determine what orphan diseases one is likely to have or develop in the future. In the GitHub, it is a system based on weight in the categories of age, sex, symptoms, family history, and other potential risk factors. Currently, however, this method is being transferred to a sequential neural network which will more accurately be able to predict orphan diseases. Additional libraries used for this include pandas, tensorflow, numpy, sklearn.model_selection, sklearn.preprocessing, sklearn.metrics, and matplotlib.pyplot for a Python version of this. 
 
-## Step 7: Finished!
+### Step 7: Finished!
 Now that the basic functionality of Health Buddy is completed, one can run the software by opening a terminal, ensuring the right folder is opened, and typing in the command npm run dev. If any errors occur, the most commonly present errors are the lack of an env file, dependencies not downloaded (this can be achieved with npm install), or lacking the command in package.json. This should utilize Concurrently to run the client and server sides at the same time. 
 
 Therefore, scripts should look something like this:
